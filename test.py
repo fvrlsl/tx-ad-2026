@@ -2,7 +2,7 @@ import pyarrow.parquet as pq
 import pandas as pd
 
 # Read the parquet file
-df = pd.read_parquet("tx-ad-2026/demo_1000.parquet")
+df = pd.read_parquet("demo_1000.parquet")
 
 print(f"数据集形状: {df.shape}")
 print(f"\n列名: {list(df.columns)}")
