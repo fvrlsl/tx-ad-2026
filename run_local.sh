@@ -2,6 +2,11 @@
 # 本地 demo 数据训练启动脚本
 # 使用 .venv312 Python 环境（Python 3.12 + PyTorch 2.11）
 # 运行方式：在 tx-ad-2026/ 目录下执行，或直接 bash tx-ad-2026/run_local.sh
+#
+# 切换模型：
+#   默认（PCVRHyFormer）: bash run_local.sh
+#   统一序列模型:         bash run_local.sh --model_type unified
+#   统一序列模型（调参）: bash run_local.sh --model_type unified --num_buckets 64 --max_feat_tokens 20 --feat_pos_mode zero
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV="${SCRIPT_DIR}/../.venv312"

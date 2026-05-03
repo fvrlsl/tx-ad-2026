@@ -1,0 +1,21 @@
+05/04/26 01:08:08 - 0:00:00 - Args: {'data_dir': '.', 'schema_path': './schema.json', 'ckpt_dir': './checkpoints_unified_test', 'log_dir': './logs_unified_test', 'batch_size': 256, 'lr': 0.0001, 'num_epochs': 1, 'patience': 2, 'seed': 42, 'device': 'cpu', 'num_workers': 0, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.2, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:16,seq_b:16,seq_c:16,seq_d:16', 'd_model': 32, 'emb_dim': 8, 'num_queries': 1, 'num_hyformer_blocks': 1, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'model_type': 'unified', 'num_buckets': 32, 'max_feat_tokens': 30, 'feat_pos_mode': 'learnable', 'max_seq_vocab': 200000, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 0, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 0, 'item_ns_tokens': 0, 'tf_events_dir': './logs_unified_test/tf_events'}
+05/04/26 01:08:09 - 0:00:00 - Seq max_lens override: {'seq_a': 16, 'seq_b': 16, 'seq_c': 16, 'seq_d': 16}
+05/04/26 01:08:09 - 0:00:00 - Using Parquet data format (IterableDataset)
+05/04/26 01:08:09 - 0:00:00 - Row Group split: 1 train (500 rows), 1 valid (500 rows)
+05/04/26 01:08:09 - 0:00:00 - PCVRParquetDataset: 500 rows from 1 file(s), batch_size=256, buffer_batches=20, shuffle=True
+05/04/26 01:08:09 - 0:00:00 - PCVRParquetDataset: 500 rows from 1 file(s), batch_size=256, buffer_batches=0, shuffle=False
+05/04/26 01:08:09 - 0:00:00 - Parquet train: 500 rows, valid: 500 rows, batch_size=256, buffer_batches=20
+05/04/26 01:08:09 - 0:00:00 - No NS groups JSON found, using default: each feature as one group
+05/04/26 01:08:09 - 0:00:00 - FeatureAsItemTokenizer: 30 scalar feat tokens, feat_vocab_size=1156, num_buckets=32, max_feat_tokens=30
+05/04/26 01:08:09 - 0:00:00 - FeatureAsItemTokenizer: 13 scalar feat tokens, feat_vocab_size=430, num_buckets=32, max_feat_tokens=30
+05/04/26 01:08:09 - 0:00:00 -   seq_emb[seq_a]: slot=2, vocab_size=20
+05/04/26 01:08:09 - 0:00:00 -   seq_emb[seq_b]: slot=1, vocab_size=29
+05/04/26 01:08:09 - 0:00:00 -   seq_emb[seq_c]: slot=1, vocab_size=76
+05/04/26 01:08:09 - 0:00:00 -   seq_emb[seq_d]: slot=0, vocab_size=6
+05/04/26 01:08:09 - 0:00:00 - UnifiedSeqModel: num_feat_tokens=43, num_buckets=32, max_feat_tokens=30, feat_pos_mode=learnable, max_seq_vocab=200000, total_params=32,489
+05/04/26 01:08:09 - 0:00:00 - UnifiedSeqModel created: num_feat_tokens=43, num_buckets=32, max_feat_tokens=30, feat_pos_mode=learnable, max_seq_vocab=200000, d_model=32, total_params=32,489
+05/04/26 01:08:09 - 0:00:01 - PCVRHyFormerRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
+05/04/26 01:08:09 - 0:00:01 - Epoch 1, Average Loss: 0.6623874604701996
+05/04/26 01:08:10 - 0:00:01 - Epoch 1 Validation | AUC: 0.5047979403963176, LogLoss: 0.6478300094604492
+05/04/26 01:08:10 - 0:00:01 - Saved checkpoint to ./checkpoints_unified_test/global_step2.layer=1.head=4.hidden=32.best_model/model.pt
+05/04/26 01:08:10 - 0:00:01 - Training complete!

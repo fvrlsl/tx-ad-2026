@@ -21,6 +21,7 @@ import torch
 from utils import set_seed, EarlyStopping, create_logger
 from dataset import FeatureSchema, get_pcvr_data, NUM_TIME_BUCKETS
 from model import PCVRHyFormer
+from unified_model import UnifiedSeqModel
 from trainer import PCVRHyFormerRankingTrainer
 
 
@@ -134,6 +135,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--rope_base', type=float, default=10000.0,
                         help='RoPE base frequency (default 10000)')
 
+    # Model variant selection.
+    parser.add_argument('--model_type', type=str, default='hyformer',
+                        choices=['hyformer', 'unified'],
+                        help='Model variant: '
+                             'hyformer = PCVRHyFormer (default), '
+                             'unified  = UnifiedSeqModel (特征虚拟化统一序列建模)')
+
+    # UnifiedSeqModel: 三大挑战的可调节接口（仅 --model_type=unified 时生效）.
+    parser.add_argument('--num_buckets', type=int, default=32,
+                        help='【挑战1】特征值分桶数，None 表示不分桶直接使用原始值 '
+                             '(unified only, default=32)')
+    parser.add_argument('--no_buckets', dest='num_buckets', action='store_const', const=None,
+                        help='【挑战1】禁用分桶，等效于 --num_buckets=None')
+    parser.add_argument('--max_feat_tokens', type=int, default=30,
+                        help='【挑战2】特征虚拟 token 最大数量，超出部分按字段顺序截断 '
+                             '(unified only, default=30)')
+    parser.add_argument('--feat_pos_mode', type=str, default='learnable',
+                        choices=['zero', 'learnable', 'prepend'],
+                        help='【挑战3】特征 token 位置编码策略: '
+                             'zero=不加位置编码, learnable=独立可学习(default), '
+                             'prepend=sinusoidal固定编码 '
+                             '(unified only)')
+    parser.add_argument('--max_seq_vocab', type=int, default=2_000_000,
+                        help='行为序列主 item_id 词表大小上限。对每个行为域，选取首个 '
+                             'vocab_size <= 该值的 sideinfo fid 建 Embedding；若无满足的 '
+                             'fid，该域用零向量占位（仅保留时间编码）。'
+                             '(unified only, default=2_000_000)')
+
     # Loss function.
     parser.add_argument('--loss_type', type=str, default='bce', choices=['bce', 'focal'],
                         help='Loss type: bce = BCEWithLogits, focal = Focal Loss')
@@ -200,7 +229,7 @@ def parse_args() -> argparse.Namespace:
     args.data_dir = os.environ.get('TRAIN_DATA_PATH', args.data_dir)
     args.ckpt_dir = os.environ.get('TRAIN_CKPT_PATH', args.ckpt_dir)
     args.log_dir = os.environ.get('TRAIN_LOG_PATH', args.log_dir)
-    args.tf_events_dir = os.environ.get('TRAIN_TF_EVENTS_PATH')
+    args.tf_events_dir = os.environ.get('TRAIN_TF_EVENTS_PATH') or os.path.join(args.log_dir or '.', 'tf_events')
 
     return args
 
@@ -268,52 +297,126 @@ def main() -> None:
         item_ns_groups = [[i] for i in range(len(pcvr_dataset.item_int_schema.entries))]
 
     # ---- Build model ----
-    user_int_feature_specs = build_feature_specs(
-        pcvr_dataset.user_int_schema, pcvr_dataset.user_int_vocab_sizes)
-    item_int_feature_specs = build_feature_specs(
-        pcvr_dataset.item_int_schema, pcvr_dataset.item_int_vocab_sizes)
+    if args.model_type == 'unified':
+        # ── UnifiedSeqModel：特征虚拟化统一序列建模 ──
+        # feature_specs 直接使用 schema.entries 格式 [(fid, col_offset, length)]
+        # vocab_sizes 使用 dataset 提供的每个 fid 的原始词表大小列表
+        user_feat_specs = pcvr_dataset.user_int_schema.entries   # [(fid, col_offset, length)]
+        item_feat_specs = pcvr_dataset.item_int_schema.entries
 
-    model_args = {
-        "user_int_feature_specs": user_int_feature_specs,
-        "item_int_feature_specs": item_int_feature_specs,
-        "user_dense_dim": pcvr_dataset.user_dense_schema.total_dim,
-        "item_dense_dim": pcvr_dataset.item_dense_schema.total_dim,
-        "seq_vocab_sizes": pcvr_dataset.seq_domain_vocab_sizes,
-        "user_ns_groups": user_ns_groups,
-        "item_ns_groups": item_ns_groups,
-        "d_model": args.d_model,
-        "emb_dim": args.emb_dim,
-        "num_queries": args.num_queries,
-        "num_hyformer_blocks": args.num_hyformer_blocks,
-        "num_heads": args.num_heads,
-        "seq_encoder_type": args.seq_encoder_type,
-        "hidden_mult": args.hidden_mult,
-        "dropout_rate": args.dropout_rate,
-        "seq_top_k": args.seq_top_k,
-        "seq_causal": args.seq_causal,
-        "action_num": args.action_num,
-        "num_time_buckets": NUM_TIME_BUCKETS if args.use_time_buckets else 0,
-        "rank_mixer_mode": args.rank_mixer_mode,
-        "use_rope": args.use_rope,
-        "rope_base": args.rope_base,
-        "emb_skip_threshold": args.emb_skip_threshold,
-        "seq_id_threshold": args.seq_id_threshold,
-        "ns_tokenizer_type": args.ns_tokenizer_type,
-        "user_ns_tokens": args.user_ns_tokens,
-        "item_ns_tokens": args.item_ns_tokens,
-    }
+        # user_int_vocab_sizes 是按 tensor 列位置展开的列表，但 UnifiedSeqModel 只需
+        # 每个字段（fid）对应一个 vocab_size；取每个字段 offset 处的第一个值即可。
+        user_vocab_sizes = [
+            pcvr_dataset.user_int_vocab_sizes[offset]
+            for _, offset, _ in user_feat_specs
+        ]
+        item_vocab_sizes = [
+            pcvr_dataset.item_int_vocab_sizes[offset]
+            for _, offset, _ in item_feat_specs
+        ]
 
-    model = PCVRHyFormer(**model_args).to(args.device)
+        # seq_domain_vocab_sizes: {domain: [vs_per_sideinfo_fid, ...]}
+        # 第一个元素是主 item_id 的 vocab_size（供 UnifiedSeqModel 内部各域独立 Embedding 使用）
+        seq_domain_vocab_sizes = pcvr_dataset.seq_domain_vocab_sizes
 
-    # Log model sizing info.
-    num_sequences = len(pcvr_dataset.seq_domains)
-    num_ns = model.num_ns
-    T = args.num_queries * num_sequences + num_ns
-    logging.info(f"PCVRHyFormer model created: num_ns={num_ns}, T={T}, d_model={args.d_model}, rank_mixer_mode={args.rank_mixer_mode}")
-    logging.info(f"User NS groups: {user_ns_groups}")
-    logging.info(f"Item NS groups: {item_ns_groups}")
-    total_params = sum(p.numel() for p in model.parameters())
-    logging.info(f"Total parameters: {total_params:,}")
+        # seq_max_len：取各域最大截断长度，用于 RoPE cache 预热
+        configured_seq_max_len = max(seq_max_lens.values()) if seq_max_lens else 256
+
+        model = UnifiedSeqModel(
+            user_feat_specs=user_feat_specs,
+            user_vocab_sizes=user_vocab_sizes,
+            item_feat_specs=item_feat_specs,
+            item_vocab_sizes=item_vocab_sizes,
+            seq_vocab_sizes=seq_domain_vocab_sizes,
+            d_model=args.d_model,
+            emb_dim=args.emb_dim,
+            num_heads=args.num_heads,
+            num_layers=args.num_hyformer_blocks,
+            hidden_mult=args.hidden_mult,
+            dropout_rate=args.dropout_rate,
+            action_num=args.action_num,
+            num_buckets=args.num_buckets,
+            max_feat_tokens=args.max_feat_tokens,
+            feat_pos_mode=args.feat_pos_mode,
+            seq_max_len=configured_seq_max_len,
+            num_time_buckets=NUM_TIME_BUCKETS if args.use_time_buckets else 0,
+            max_seq_vocab=args.max_seq_vocab,
+        ).to(args.device)
+
+        total_params = sum(p.numel() for p in model.parameters())
+        logging.info(
+            f"UnifiedSeqModel created: "
+            f"num_feat_tokens={model.num_feat_tokens}, "
+            f"num_buckets={args.num_buckets}, "
+            f"max_feat_tokens={args.max_feat_tokens}, "
+            f"feat_pos_mode={args.feat_pos_mode}, "
+            f"max_seq_vocab={args.max_seq_vocab}, "
+            f"d_model={args.d_model}, "
+            f"total_params={total_params:,}"
+        )
+
+        ckpt_params = {
+            "layer": args.num_hyformer_blocks,
+            "head": args.num_heads,
+            "hidden": args.d_model,
+        }
+
+    else:
+        # ── PCVRHyFormer（默认）──
+        user_int_feature_specs = build_feature_specs(
+            pcvr_dataset.user_int_schema, pcvr_dataset.user_int_vocab_sizes)
+        item_int_feature_specs = build_feature_specs(
+            pcvr_dataset.item_int_schema, pcvr_dataset.item_int_vocab_sizes)
+
+        model_args = {
+            "user_int_feature_specs": user_int_feature_specs,
+            "item_int_feature_specs": item_int_feature_specs,
+            "user_dense_dim": pcvr_dataset.user_dense_schema.total_dim,
+            "item_dense_dim": pcvr_dataset.item_dense_schema.total_dim,
+            "seq_vocab_sizes": pcvr_dataset.seq_domain_vocab_sizes,
+            "user_ns_groups": user_ns_groups,
+            "item_ns_groups": item_ns_groups,
+            "d_model": args.d_model,
+            "emb_dim": args.emb_dim,
+            "num_queries": args.num_queries,
+            "num_hyformer_blocks": args.num_hyformer_blocks,
+            "num_heads": args.num_heads,
+            "seq_encoder_type": args.seq_encoder_type,
+            "hidden_mult": args.hidden_mult,
+            "dropout_rate": args.dropout_rate,
+            "seq_top_k": args.seq_top_k,
+            "seq_causal": args.seq_causal,
+            "action_num": args.action_num,
+            "num_time_buckets": NUM_TIME_BUCKETS if args.use_time_buckets else 0,
+            "rank_mixer_mode": args.rank_mixer_mode,
+            "use_rope": args.use_rope,
+            "rope_base": args.rope_base,
+            "emb_skip_threshold": args.emb_skip_threshold,
+            "seq_id_threshold": args.seq_id_threshold,
+            "ns_tokenizer_type": args.ns_tokenizer_type,
+            "user_ns_tokens": args.user_ns_tokens,
+            "item_ns_tokens": args.item_ns_tokens,
+        }
+
+        model = PCVRHyFormer(**model_args).to(args.device)
+
+        num_sequences = len(pcvr_dataset.seq_domains)
+        num_ns = model.num_ns
+        T = args.num_queries * num_sequences + num_ns
+        total_params = sum(p.numel() for p in model.parameters())
+        logging.info(
+            f"PCVRHyFormer model created: num_ns={num_ns}, T={T}, "
+            f"d_model={args.d_model}, rank_mixer_mode={args.rank_mixer_mode}"
+        )
+        logging.info(f"User NS groups: {user_ns_groups}")
+        logging.info(f"Item NS groups: {item_ns_groups}")
+        logging.info(f"Total parameters: {total_params:,}")
+
+        ckpt_params = {
+            "layer": args.num_hyformer_blocks,
+            "head": args.num_heads,
+            "hidden": args.d_model,
+        }
 
     # ---- Training ----
     early_stopping = EarlyStopping(
@@ -321,12 +424,6 @@ def main() -> None:
         patience=args.patience,
         label='model',
     )
-
-    ckpt_params = {
-        "layer": args.num_hyformer_blocks,
-        "head": args.num_heads,
-        "hidden": args.d_model,
-    }
 
     trainer = PCVRHyFormerRankingTrainer(
         model=model,
