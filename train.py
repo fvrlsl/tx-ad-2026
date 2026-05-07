@@ -97,21 +97,27 @@ def parse_args() -> argparse.Namespace:
                         help='Number of stacked MultiSeqHyFormerBlock layers')
     parser.add_argument('--num_heads', type=int, default=4,
                         help='Number of attention heads (must satisfy d_model %% num_heads == 0)')
-    parser.add_argument('--seq_encoder_type', type=str, default='transformer',
+    parser.add_argument('--seq_encoder_type', type=str, default='longer',
                         choices=['swiglu', 'transformer', 'longer'],
                         help='Sequence encoder variant: '
                              'swiglu = SwiGLU without attention, '
-                             'transformer = standard self-attention, '
-                             'longer = Top-K compressed encoder '
-                             '(only this variant consumes --seq_top_k / --seq_causal)')
+                             'transformer = standard self-attention (O(T²), only suitable for short seq), '
+                             'longer = Top-K most-recent tokens + self-attention (O(K²), default). '
+                             'For seq_b/c/d whose p90 lengths are 1920/1109/3793, '
+                             'transformer would be 200~800x slower than longer with K=64.')
     parser.add_argument('--hidden_mult', type=int, default=4,
                         help='FFN inner-dim multiplier relative to d_model')
     parser.add_argument('--dropout_rate', type=float, default=0.01,
                         help='Dropout rate for the backbone '
                              '(seq id-embedding dropout is twice this value)')
-    parser.add_argument('--seq_top_k', type=int, default=50,
+    parser.add_argument('--seq_top_k', type=int, default=64,
                         help='Number of most-recent tokens kept by LongerEncoder '
-                             '(only effective when --seq_encoder_type=longer)')
+                             '(only effective when --seq_encoder_type=longer). '
+                             'K=64 is the recommended default for long-seq domains '
+                             '(seq_b p90=1920, seq_c p90=1109, seq_d p90=3793): '
+                             'it captures the most recent 64 interactions while keeping '
+                             'attention complexity O(64²) instead of O(T²). '
+                             'Increase to K=128 if AUC drops >0.002 vs full sequence.')
     parser.add_argument('--seq_causal', action='store_true', default=False,
                         help='Whether the LongerEncoder self-attention uses a causal mask '
                              '(only effective when --seq_encoder_type=longer)')
@@ -224,22 +230,22 @@ def parse_args() -> argparse.Namespace:
                              '(0 = automatically use the number of item groups)')
 
     # ── Pre-training data analysis switch ─────────────────────────────────
-    parser.add_argument('--run_data_analysis', action='store_true', default=False,
-                        help='Run full data analysis before training. '
+    # 默认开启；使用 --no_data_analysis 可关闭
+    parser.add_argument('--run_data_analysis', action='store_true', default=True,
+                        help='Run full data analysis before training (default: on). '
                              'Generates report + optional offline export. '
-                             'See --analysis_* flags for control.')
+                             'Use --no_data_analysis to disable.')
+    parser.add_argument('--no_data_analysis', dest='run_data_analysis', action='store_false',
+                        help='Disable pre-training data analysis.')
     parser.add_argument('--analysis_output_dir', type=str, default='data_analysis',
                         help='Output directory for analysis reports and offline exports '
-                             '(only used when --run_data_analysis is set, '
-                             'default: <log_dir>/data_analysis/)')
-    parser.add_argument('--analysis_export_rows', type=int, default=10000,
+                             '(default: <log_dir>/data_analysis/)')
+    parser.add_argument('--analysis_export_rows', type=int, default=100_000,
                         help='Export the first N rows as an offline training parquet. '
-                             '0 = skip export '
-                             '(only used when --run_data_analysis is set, default: 100000)')
-    parser.add_argument('--analysis_max_rows', type=int, default=100000,
+                             '0 = skip export (default: 100000)')
+    parser.add_argument('--analysis_max_rows', type=int, default=None,
                         help='Limit the number of rows analysed. '
-                             'None = analyse all rows '
-                             '(only used when --run_data_analysis is set)')
+                             'None = analyse all rows (default: None)')
     # ─────────────────────────────────────────────────────────────────────
 
     args = parser.parse_args()
