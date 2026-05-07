@@ -423,16 +423,84 @@ class UnifiedSeqModel(nn.Module):
     # 前向传播
     # ──────────────────────────────────────────────────────────────────────────
 
+    def _mean_pool(self, tokens: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        """对所有非 padding token 做 mean pooling，返回 (B, d_model)。
+
+        Args:
+            tokens: (B, T, d_model)
+            mask:   (B, T)，True = padding（与 key_padding_mask 语义一致）
+        """
+        valid = (~mask).float().unsqueeze(-1)           # (B, T, 1)
+        denom = valid.sum(dim=1).clamp(min=1.0)         # (B, 1)，防止全 padding 时除零
+        return (tokens * valid).sum(dim=1) / denom      # (B, d_model)
+
     def forward(self, inputs: ModelInput) -> torch.Tensor:
         """前向传播，返回 logits (B, action_num)。"""
         tokens, mask = self._build_unified_sequence(inputs)
         tokens = self._run_transformer(tokens, mask)
-        cls_repr = self.output_norm(tokens[:, 0, :])
+        # mean pooling：对所有非 padding token 取均值，作为全局表示
+        cls_repr = self.output_norm(self._mean_pool(tokens, mask))
         return self.classifier(cls_repr)
 
     def predict(self, inputs: ModelInput) -> Tuple[torch.Tensor, torch.Tensor]:
         """推理接口，返回 (logits, repr_vec)。"""
         tokens, mask = self._build_unified_sequence(inputs)
         tokens = self._run_transformer(tokens, mask)
-        cls_repr = self.output_norm(tokens[:, 0, :])
+        cls_repr = self.output_norm(self._mean_pool(tokens, mask))
         return self.classifier(cls_repr), cls_repr
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # 稀疏/稠密参数分组（供 trainer 使用）
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def get_sparse_params(self) -> List[nn.Parameter]:
+        """返回所有 Embedding 表参数（用 Adagrad 优化）。"""
+        sparse_ptrs = {m.weight.data_ptr() for m in self.modules() if isinstance(m, nn.Embedding)}
+        return [p for p in self.parameters() if p.data_ptr() in sparse_ptrs]
+
+    def get_dense_params(self) -> List[nn.Parameter]:
+        """返回所有非 Embedding 参数（用 AdamW 优化）。"""
+        sparse_ptrs = {p.data_ptr() for p in self.get_sparse_params()}
+        return [p for p in self.parameters() if p.data_ptr() not in sparse_ptrs]
+
+    def reinit_high_cardinality_params(self, cardinality_threshold: int = 0) -> "set[int]":
+        """重置高基数 Embedding（vocab > threshold），每轮 epoch 末调用防过拟合。
+
+        Returns:
+            被重置的参数的 data_ptr() 集合（供 trainer 重建 Adagrad 状态用）。
+        """
+        reinit_count = 0
+        skip_count = 0
+        reinit_ptrs: set = set()
+
+        def _maybe_reinit(emb: nn.Embedding, vocab_size: int) -> None:
+            nonlocal reinit_count, skip_count
+            if cardinality_threshold > 0 and vocab_size > cardinality_threshold:
+                nn.init.xavier_normal_(emb.weight.data)
+                emb.weight.data[0] = 0.0
+                reinit_ptrs.add(emb.weight.data_ptr())
+                reinit_count += 1
+            else:
+                skip_count += 1
+
+        # 特征虚拟 id Embedding（vocab 很小，通常不会被重置）
+        if self.user_feat_emb is not None:
+            _maybe_reinit(self.user_feat_emb, self.user_feat_tokenizer.feat_vocab_size)
+        if self.item_feat_emb is not None:
+            _maybe_reinit(self.item_feat_emb, self.item_feat_tokenizer.feat_vocab_size)
+
+        # 行为序列各域 Embedding
+        for domain, emb in self.seq_embs.items():
+            slot = self.seq_slot_idx[domain]
+            # seq_vocab_sizes 在 __init__ 里没有保存，用 num_embeddings 作为 proxy
+            _maybe_reinit(emb, emb.num_embeddings)
+
+        # 时间桶 Embedding 保持不变（视为低基数）
+        if self.time_emb is not None:
+            skip_count += 1
+
+        logging.info(
+            f"Re-initialized {reinit_count} high-cardinality Embeddings "
+            f"(vocab>{cardinality_threshold}), kept {skip_count}"
+        )
+        return reinit_ptrs

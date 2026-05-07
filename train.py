@@ -223,6 +223,25 @@ def parse_args() -> argparse.Namespace:
                         help='Number of item NS tokens in rankmixer mode '
                              '(0 = automatically use the number of item groups)')
 
+    # ── Pre-training data analysis switch ─────────────────────────────────
+    parser.add_argument('--run_data_analysis', action='store_true', default=False,
+                        help='Run full data analysis before training. '
+                             'Generates report + optional offline export. '
+                             'See --analysis_* flags for control.')
+    parser.add_argument('--analysis_output_dir', type=str, default='data_analysis',
+                        help='Output directory for analysis reports and offline exports '
+                             '(only used when --run_data_analysis is set, '
+                             'default: <log_dir>/data_analysis/)')
+    parser.add_argument('--analysis_export_rows', type=int, default=10000,
+                        help='Export the first N rows as an offline training parquet. '
+                             '0 = skip export '
+                             '(only used when --run_data_analysis is set, default: 100000)')
+    parser.add_argument('--analysis_max_rows', type=int, default=100000,
+                        help='Limit the number of rows analysed. '
+                             'None = analyse all rows '
+                             '(only used when --run_data_analysis is set)')
+    # ─────────────────────────────────────────────────────────────────────
+
     args = parser.parse_args()
 
     # Environment variables take precedence.
@@ -279,6 +298,37 @@ def main() -> None:
         seed=args.seed,
         seq_max_lens=seq_max_lens,
     )
+
+    # ---- Pre-training data analysis ----
+    if args.run_data_analysis:
+        import glob as _glob
+        from data_analysis import run_analysis as _run_analysis
+
+        parquet_files = sorted(_glob.glob(os.path.join(args.data_dir, '*.parquet')))
+        if not parquet_files:
+            logging.warning('[data_analysis] No parquet files found under data_dir, skipping.')
+        else:
+            analysis_data_path = parquet_files[0]
+            analysis_output_dir = os.path.join(args.log_dir, args.analysis_output_dir)
+            export_rows = args.analysis_export_rows if args.analysis_export_rows > 0 else None
+
+            logging.info('=' * 60)
+            logging.info('[data_analysis] Pre-training data analysis enabled')
+            logging.info(f'[data_analysis]   data_path      : {analysis_data_path}')
+            logging.info(f'[data_analysis]   schema_path    : {schema_path}')
+            logging.info(f'[data_analysis]   output_dir     : {analysis_output_dir}')
+            logging.info(f'[data_analysis]   export_rows    : {export_rows}')
+            logging.info(f'[data_analysis]   max_rows       : {args.analysis_max_rows}')
+            logging.info('=' * 60)
+
+            _run_analysis(
+                data_path=analysis_data_path,
+                schema_path=schema_path,
+                output_dir=analysis_output_dir,
+                max_rows=args.analysis_max_rows,
+                export_rows=export_rows,
+            )
+            logging.info(f'[data_analysis] Complete. Reports saved to: {analysis_output_dir}')
 
     # ---- NS groups ----
     if args.ns_groups_json and os.path.exists(args.ns_groups_json):

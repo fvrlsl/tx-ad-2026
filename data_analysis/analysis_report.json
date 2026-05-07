@@ -1,0 +1,1938 @@
+{
+  "label_distribution": {
+    "positive(label_type=2)": 124,
+    "negative(label_type=1)": 876,
+    "total": 1000,
+    "pos_rate": "12.4000%",
+    "neg_pos_ratio": "1:7.1",
+    "value_counts": {
+      "1": 876,
+      "2": 124
+    }
+  },
+  "seq_domain_coverage": {
+    "seq_a": {
+      "user_coverage": "91.70%",
+      "users_with_seq": 917,
+      "users_without_seq": 83
+    },
+    "seq_b": {
+      "user_coverage": "98.80%",
+      "users_with_seq": 988,
+      "users_without_seq": 12
+    },
+    "seq_c": {
+      "user_coverage": "99.80%",
+      "users_with_seq": 998,
+      "users_without_seq": 2
+    },
+    "seq_d": {
+      "user_coverage": "92.00%",
+      "users_with_seq": 920,
+      "users_without_seq": 80
+    }
+  },
+  "seq_length_stats": {
+    "seq_a": {
+      "ref_fid": 38,
+      "mean_len": 38.2,
+      "p50": 21,
+      "p90": 95,
+      "p99": 223,
+      "max_len": 416,
+      "max_array_len": 1888,
+      "zero_seq_rate": "8.30%",
+      "seq_max_lens_suggestion": 95
+    },
+    "seq_b": {
+      "ref_fid": 68,
+      "mean_len": 569.3,
+      "p50": 403,
+      "p90": 1393,
+      "p99": 1803,
+      "max_len": 1952,
+      "max_array_len": 1952,
+      "zero_seq_rate": "1.20%",
+      "seq_max_lens_suggestion": 1393
+    },
+    "seq_c": {
+      "ref_fid": 28,
+      "mean_len": 449.4,
+      "p50": 322,
+      "p90": 887,
+      "p99": 2526,
+      "max_len": 3894,
+      "max_array_len": 3894,
+      "zero_seq_rate": "0.20%",
+      "seq_max_lens_suggestion": 887
+    },
+    "seq_d": {
+      "ref_fid": 17,
+      "mean_len": 1099.9,
+      "p50": 1035,
+      "p90": 2215,
+      "p99": 2865,
+      "max_len": 3951,
+      "max_array_len": 3951,
+      "zero_seq_rate": "8.00%",
+      "seq_max_lens_suggestion": 2215
+    }
+  },
+  "missing_rate": {
+    "item_int_feats_6": {
+      "missing_count": 11,
+      "missing_rate": "1.10%"
+    },
+    "item_int_feats_7": {
+      "missing_count": 86,
+      "missing_rate": "8.60%"
+    },
+    "item_int_feats_8": {
+      "missing_count": 522,
+      "missing_rate": "52.20%"
+    },
+    "item_int_feats_12": {
+      "missing_count": 86,
+      "missing_rate": "8.60%"
+    },
+    "item_int_feats_81": {
+      "missing_count": 659,
+      "missing_rate": "65.90%"
+    }
+  },
+  "scalar_user_int": {
+    "user_int_feats_1": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 1000,
+      "min": 1.0,
+      "max": 4.0,
+      "mean": 3.381,
+      "std": 1.170131705496526,
+      "p50": 4.0,
+      "p90": 4.0,
+      "p99": 4.0,
+      "top10_values": {
+        "4": 776,
+        "1": 171,
+        "2": 53
+      }
+    },
+    "user_int_feats_3": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 970,
+      "min": 9.0,
+      "max": 1839.0,
+      "mean": 987.5567010309278,
+      "std": 517.0506253809735,
+      "p50": 957.0,
+      "p90": 1701.0,
+      "p99": 1830.0,
+      "top10_values": {
+        "894.0": 36,
+        "176.0": 36,
+        "1753.0": 31,
+        "1426.0": 19,
+        "645.0": 19,
+        "957.0": 18,
+        "1502.0": 16,
+        "870.0": 13,
+        "523.0": 11,
+        "1000.0": 11
+      }
+    },
+    "user_int_feats_4": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 970,
+      "min": 1.0,
+      "max": 986.0,
+      "mean": 498.8134020618557,
+      "std": 299.3962952607547,
+      "p50": 496.5,
+      "p90": 889.0,
+      "p99": 971.0,
+      "top10_values": {
+        "758.0": 36,
+        "969.0": 36,
+        "6.0": 31,
+        "730.0": 19,
+        "630.0": 19,
+        "816.0": 18,
+        "970.0": 17,
+        "285.0": 16,
+        "274.0": 15,
+        "134.0": 13
+      }
+    },
+    "user_int_feats_48": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 998,
+      "min": 3.0,
+      "max": 99.0,
+      "mean": 58.0060120240481,
+      "std": 27.55696141258575,
+      "p50": 60.0,
+      "p90": 92.0,
+      "p99": 98.0,
+      "top10_values": {
+        "26.0": 59,
+        "40.0": 58,
+        "82.0": 47,
+        "92.0": 45,
+        "8.0": 43,
+        "31.0": 35,
+        "60.0": 33,
+        "93.0": 33,
+        "86.0": 33,
+        "74.0": 32
+      }
+    },
+    "user_int_feats_49": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 993,
+      "min": 1.0,
+      "max": 2.0,
+      "mean": 1.5820745216515608,
+      "std": 0.4934663093598014,
+      "p50": 2.0,
+      "p90": 2.0,
+      "p99": 2.0,
+      "top10_values": {
+        "2.0": 578,
+        "1.0": 415
+      }
+    },
+    "user_int_feats_50": {
+      "total": 1000,
+      "missing(<=0)": 2,
+      "missing_rate": "0.20%",
+      "valid_count": 994,
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0,
+      "std": 0.0,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p99": 1.0,
+      "top10_values": {
+        "1.0": 994
+      }
+    },
+    "user_int_feats_51": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 999,
+      "min": 40.0,
+      "max": 150.0,
+      "mean": 56.15715715715716,
+      "std": 3.581337499160351,
+      "p50": 56.0,
+      "p90": 56.0,
+      "p99": 56.0,
+      "top10_values": {
+        "56.0": 995,
+        "78.0": 1,
+        "113.0": 1,
+        "40.0": 1,
+        "150.0": 1
+      }
+    },
+    "user_int_feats_52": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 999,
+      "min": 5.0,
+      "max": 174.0,
+      "mean": 93.85585585585585,
+      "std": 56.34138751519631,
+      "p50": 98.0,
+      "p90": 157.0,
+      "p99": 166.0,
+      "top10_values": {
+        "152.0": 172,
+        "22.0": 58,
+        "123.0": 51,
+        "156.0": 51,
+        "157.0": 49,
+        "151.0": 48,
+        "5.0": 46,
+        "41.0": 42,
+        "73.0": 39,
+        "44.0": 37
+      }
+    },
+    "user_int_feats_53": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 999,
+      "min": 3.0,
+      "max": 557.0,
+      "mean": 288.54154154154156,
+      "std": 165.36722972632984,
+      "p50": 307.0,
+      "p90": 511.0,
+      "p99": 557.0,
+      "top10_values": {
+        "415.0": 39,
+        "344.0": 33,
+        "222.0": 29,
+        "262.0": 21,
+        "502.0": 19,
+        "61.0": 18,
+        "346.0": 16,
+        "557.0": 15,
+        "22.0": 15,
+        "369.0": 15
+      }
+    },
+    "user_int_feats_54": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 632,
+      "min": 3.0,
+      "max": 2843.0,
+      "mean": 1476.7832278481012,
+      "std": 838.6956019211016,
+      "p50": 1483.5,
+      "p90": 2636.7,
+      "p99": 2830.38,
+      "top10_values": {
+        "2771.0": 7,
+        "284.0": 6,
+        "1983.0": 5,
+        "1602.0": 5,
+        "2658.0": 5,
+        "1133.0": 5,
+        "663.0": 4,
+        "2388.0": 4,
+        "1827.0": 4,
+        "1352.0": 4
+      }
+    },
+    "user_int_feats_55": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 981,
+      "min": 8.0,
+      "max": 41.0,
+      "mean": 29.68195718654434,
+      "std": 9.649297883001635,
+      "p50": 34.0,
+      "p90": 41.0,
+      "p99": 41.0,
+      "top10_values": {
+        "41.0": 278,
+        "19.0": 181,
+        "17.0": 162,
+        "34.0": 128,
+        "30.0": 111,
+        "35.0": 80,
+        "25.0": 13,
+        "37.0": 11,
+        "14.0": 7,
+        "13.0": 4
+      }
+    },
+    "user_int_feats_56": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 981,
+      "min": 1.0,
+      "max": 1434.0,
+      "mean": 752.65749235474,
+      "std": 405.5785825834988,
+      "p50": 731.0,
+      "p90": 1295.0,
+      "p99": 1432.0,
+      "top10_values": {
+        "1104.0": 35,
+        "276.0": 22,
+        "1232.0": 21,
+        "928.0": 20,
+        "541.0": 19,
+        "792.0": 18,
+        "1432.0": 16,
+        "658.0": 16,
+        "280.0": 15,
+        "1132.0": 15
+      }
+    },
+    "user_int_feats_57": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 969,
+      "min": 2.0,
+      "max": 250.0,
+      "mean": 126.58823529411765,
+      "std": 67.61508941053148,
+      "p50": 112.0,
+      "p90": 220.0,
+      "p99": 241.0,
+      "top10_values": {
+        "56.0": 73,
+        "109.0": 59,
+        "220.0": 54,
+        "143.0": 53,
+        "44.0": 44,
+        "178.0": 40,
+        "232.0": 34,
+        "108.0": 33,
+        "156.0": 33,
+        "105.0": 33
+      }
+    },
+    "user_int_feats_58": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 850,
+      "min": 1.0,
+      "max": 2.0,
+      "mean": 1.6988235294117646,
+      "std": 0.45903933015661974,
+      "p50": 2.0,
+      "p90": 2.0,
+      "p99": 2.0,
+      "top10_values": {
+        "2.0": 594,
+        "1.0": 256
+      }
+    },
+    "user_int_feats_59": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 850,
+      "min": 1.0,
+      "max": 14.0,
+      "mean": 8.370588235294118,
+      "std": 4.55049728781485,
+      "p50": 10.0,
+      "p90": 13.0,
+      "p99": 14.0,
+      "top10_values": {
+        "13.0": 245,
+        "10.0": 175,
+        "3.0": 138,
+        "1.0": 112,
+        "8.0": 66,
+        "7.0": 62,
+        "14.0": 49,
+        "2.0": 3
+      }
+    },
+    "user_int_feats_82": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 796,
+      "min": 1.0,
+      "max": 23.0,
+      "mean": 9.096733668341708,
+      "std": 6.56420170581607,
+      "p50": 6.0,
+      "p90": 19.0,
+      "p99": 23.0,
+      "top10_values": {
+        "2.0": 155,
+        "6.0": 139,
+        "11.0": 81,
+        "18.0": 80,
+        "5.0": 46,
+        "7.0": 46,
+        "8.0": 30,
+        "4.0": 27,
+        "21.0": 24,
+        "23.0": 23
+      }
+    },
+    "user_int_feats_86": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 308,
+      "min": 2.0,
+      "max": 245.0,
+      "mean": 105.47402597402598,
+      "std": 74.29746516313377,
+      "p50": 90.0,
+      "p90": 221.60000000000002,
+      "p99": 240.0,
+      "top10_values": {
+        "90.0": 33,
+        "198.0": 32,
+        "32.0": 25,
+        "83.0": 21,
+        "14.0": 21,
+        "37.0": 17,
+        "109.0": 15,
+        "15.0": 15,
+        "182.0": 12,
+        "230.0": 10
+      }
+    },
+    "user_int_feats_92": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 506,
+      "min": 1.0,
+      "max": 2.0,
+      "mean": 1.5,
+      "std": 0.5004948046732858,
+      "p50": 1.5,
+      "p90": 2.0,
+      "p99": 2.0,
+      "top10_values": {
+        "1.0": 253,
+        "2.0": 253
+      }
+    },
+    "user_int_feats_93": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 829,
+      "min": 1.0,
+      "max": 37.0,
+      "mean": 14.667068757539203,
+      "std": 8.467479061866117,
+      "p50": 12.0,
+      "p90": 26.0,
+      "p99": 35.0,
+      "top10_values": {
+        "12.0": 127,
+        "16.0": 113,
+        "10.0": 105,
+        "24.0": 85,
+        "3.0": 73,
+        "8.0": 54,
+        "4.0": 34,
+        "32.0": 27,
+        "21.0": 24,
+        "9.0": 22
+      }
+    },
+    "user_int_feats_94": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 479,
+      "min": 1.0,
+      "max": 6.0,
+      "mean": 3.77035490605428,
+      "std": 2.1033640318183675,
+      "p50": 4.0,
+      "p90": 6.0,
+      "p99": 6.0,
+      "top10_values": {
+        "6.0": 172,
+        "1.0": 126,
+        "2.0": 61,
+        "5.0": 60,
+        "4.0": 46,
+        "3.0": 14
+      }
+    },
+    "user_int_feats_95": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 682,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 2.7580645161290325,
+      "std": 0.438728380679484,
+      "p50": 3.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "3.0": 520,
+        "2.0": 159,
+        "1.0": 3
+      }
+    },
+    "user_int_feats_96": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 322,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 1.8167701863354038,
+      "std": 0.4032169742577316,
+      "p50": 2.0,
+      "p90": 2.0,
+      "p99": 2.0,
+      "top10_values": {
+        "2.0": 259,
+        "1.0": 61,
+        "3.0": 2
+      }
+    },
+    "user_int_feats_97": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 708,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 1.5988700564971752,
+      "std": 0.8820696185364946,
+      "p50": 1.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "1.0": 474,
+        "3.0": 190,
+        "2.0": 44
+      }
+    },
+    "user_int_feats_98": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 897,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 2.677814938684504,
+      "std": 0.5880966928816829,
+      "p50": 3.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "3.0": 665,
+        "2.0": 175,
+        "1.0": 57
+      }
+    },
+    "user_int_feats_99": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 188,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 2.9361702127659575,
+      "std": 0.35248576831127043,
+      "p50": 3.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "3.0": 182,
+        "1.0": 6
+      }
+    },
+    "user_int_feats_100": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 155,
+      "min": 1.0,
+      "max": 2.0,
+      "mean": 1.9548387096774194,
+      "std": 0.20833088952623374,
+      "p50": 2.0,
+      "p90": 2.0,
+      "p99": 2.0,
+      "top10_values": {
+        "2.0": 148,
+        "1.0": 7
+      }
+    },
+    "user_int_feats_101": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 90,
+      "min": 2.0,
+      "max": 3.0,
+      "mean": 2.9555555555555557,
+      "std": 0.20723493215097802,
+      "p50": 3.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "3.0": 86,
+        "2.0": 4
+      }
+    },
+    "user_int_feats_102": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 123,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 1.1300813008130082,
+      "std": 0.49521231733231175,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p99": 3.0,
+      "top10_values": {
+        "1.0": 115,
+        "3.0": 8
+      }
+    },
+    "user_int_feats_103": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 138,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 2.717391304347826,
+      "std": 0.5535437320406563,
+      "p50": 3.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "3.0": 106,
+        "2.0": 25,
+        "1.0": 7
+      }
+    },
+    "user_int_feats_104": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 628,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 2.359872611464968,
+      "std": 0.9303227731358503,
+      "p50": 3.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "3.0": 425,
+        "1.0": 199,
+        "2.0": 4
+      }
+    },
+    "user_int_feats_105": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 691,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 2.2865412445730824,
+      "std": 0.4712992119762809,
+      "p50": 2.0,
+      "p90": 3.0,
+      "p99": 3.0,
+      "top10_values": {
+        "2.0": 481,
+        "3.0": 204,
+        "1.0": 6
+      }
+    },
+    "user_int_feats_106": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 840,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 1.7595238095238095,
+      "std": 0.43040548213402735,
+      "p50": 2.0,
+      "p90": 2.0,
+      "p99": 2.0,
+      "top10_values": {
+        "2.0": 636,
+        "1.0": 203,
+        "3.0": 1
+      }
+    },
+    "user_int_feats_107": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 700,
+      "min": 1.0,
+      "max": 2.0,
+      "mean": 1.0942857142857143,
+      "std": 0.2924347569341775,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p99": 2.0,
+      "top10_values": {
+        "1.0": 634,
+        "2.0": 66
+      }
+    },
+    "user_int_feats_108": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 484,
+      "min": 2.0,
+      "max": 7.0,
+      "mean": 5.454545454545454,
+      "std": 1.6890832041061135,
+      "p50": 6.0,
+      "p90": 7.0,
+      "p99": 7.0,
+      "top10_values": {
+        "7.0": 175,
+        "6.0": 127,
+        "5.0": 61,
+        "2.0": 61,
+        "4.0": 46,
+        "3.0": 14
+      }
+    },
+    "user_int_feats_109": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 146,
+      "min": 1.0,
+      "max": 7.0,
+      "mean": 2.993150684931507,
+      "std": 2.367878652944127,
+      "p50": 1.0,
+      "p90": 7.0,
+      "p99": 7.0,
+      "top10_values": {
+        "1.0": 75,
+        "7.0": 18,
+        "6.0": 18,
+        "5.0": 12,
+        "3.0": 8,
+        "2.0": 8,
+        "4.0": 7
+      }
+    }
+  },
+  "scalar_item_int": {
+    "item_int_feats_5": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 998,
+      "min": 4.0,
+      "max": 325.0,
+      "mean": 118.45190380761522,
+      "std": 78.57386810913448,
+      "p50": 128.0,
+      "p90": 256.30000000000007,
+      "p99": 287.0,
+      "top10_values": {
+        "146.0": 107,
+        "23.0": 79,
+        "90.0": 64,
+        "8.0": 48,
+        "128.0": 43,
+        "279.0": 35,
+        "145.0": 34,
+        "190.0": 34,
+        "286.0": 32,
+        "132.0": 30
+      }
+    },
+    "item_int_feats_6": {
+      "total": 1000,
+      "missing(<=0)": 11,
+      "missing_rate": "1.10%",
+      "valid_count": 987,
+      "min": 1.0,
+      "max": 977.0,
+      "mean": 423.74366767983787,
+      "std": 242.91775281519043,
+      "p50": 417.0,
+      "p90": 755.0,
+      "p99": 893.0,
+      "top10_values": {
+        "404.0": 42,
+        "504.0": 32,
+        "123.0": 30,
+        "331.0": 29,
+        "625.0": 27,
+        "431.0": 26,
+        "620.0": 26,
+        "893.0": 20,
+        "669.0": 20,
+        "770.0": 20
+      }
+    },
+    "item_int_feats_7": {
+      "total": 1000,
+      "missing(<=0)": 86,
+      "missing_rate": "8.60%",
+      "valid_count": 912,
+      "min": 2.0,
+      "max": 2806.0,
+      "mean": 1152.1491228070176,
+      "std": 702.4794552033278,
+      "p50": 1062.0,
+      "p90": 2181.0999999999995,
+      "p99": 2512.1299999999983,
+      "top10_values": {
+        "398.0": 35,
+        "175.0": 28,
+        "1270.0": 21,
+        "939.0": 19,
+        "641.0": 17,
+        "685.0": 15,
+        "1334.0": 15,
+        "961.0": 14,
+        "713.0": 13,
+        "433.0": 12
+      }
+    },
+    "item_int_feats_8": {
+      "total": 1000,
+      "missing(<=0)": 522,
+      "missing_rate": "52.20%",
+      "valid_count": 477,
+      "min": -1.0,
+      "max": 2431.0,
+      "mean": 970.1991614255766,
+      "std": 663.8969528721373,
+      "p50": 909.0,
+      "p90": 1901.6000000000004,
+      "p99": 2161.0,
+      "top10_values": {
+        "369.0": 35,
+        "1832.0": 19,
+        "59.0": 11,
+        "1481.0": 10,
+        "280.0": 9,
+        "1976.0": 9,
+        "1362.0": 9,
+        "151.0": 9,
+        "547.0": 8,
+        "252.0": 8
+      }
+    },
+    "item_int_feats_9": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 998,
+      "min": 3.0,
+      "max": 37.0,
+      "mean": 21.171342685370742,
+      "std": 9.573015631746278,
+      "p50": 23.0,
+      "p90": 32.0,
+      "p99": 37.0,
+      "top10_values": {
+        "32.0": 135,
+        "15.0": 109,
+        "11.0": 106,
+        "31.0": 98,
+        "14.0": 97,
+        "30.0": 82,
+        "27.0": 78,
+        "3.0": 73,
+        "25.0": 59,
+        "19.0": 35
+      }
+    },
+    "item_int_feats_10": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 998,
+      "min": 2.0,
+      "max": 309.0,
+      "mean": 150.00701402805612,
+      "std": 89.76215619600876,
+      "p50": 134.0,
+      "p90": 290.0,
+      "p99": 303.0,
+      "top10_values": {
+        "303.0": 71,
+        "102.0": 66,
+        "134.0": 44,
+        "178.0": 43,
+        "75.0": 43,
+        "170.0": 36,
+        "200.0": 36,
+        "82.0": 34,
+        "56.0": 34,
+        "66.0": 31
+      }
+    },
+    "item_int_feats_12": {
+      "total": 1000,
+      "missing(<=0)": 86,
+      "missing_rate": "8.60%",
+      "valid_count": 912,
+      "min": 5.0,
+      "max": 2777.0,
+      "mean": 1137.392543859649,
+      "std": 744.3872803370971,
+      "p50": 1172.5,
+      "p90": 2132.0,
+      "p99": 2669.89,
+      "top10_values": {
+        "1979.0": 35,
+        "63.0": 28,
+        "2177.0": 21,
+        "1398.0": 19,
+        "1785.0": 17,
+        "1129.0": 16,
+        "1449.0": 15,
+        "66.0": 15,
+        "1911.0": 14,
+        "366.0": 13
+      }
+    },
+    "item_int_feats_13": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 998,
+      "min": 1.0,
+      "max": 8.0,
+      "mean": 4.456913827655311,
+      "std": 2.508090678413084,
+      "p50": 4.0,
+      "p90": 8.0,
+      "p99": 8.0,
+      "top10_values": {
+        "2.0": 460,
+        "6.0": 235,
+        "8.0": 202,
+        "7.0": 44,
+        "4.0": 25,
+        "3.0": 23,
+        "1.0": 5,
+        "5.0": 4
+      }
+    },
+    "item_int_feats_16": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 998,
+      "min": 2.0,
+      "max": 35259.0,
+      "mean": 12356.10120240481,
+      "std": 8037.689148587829,
+      "p50": 11347.0,
+      "p90": 22338.0,
+      "p99": 32821.889999999985,
+      "top10_values": {
+        "8617.0": 19,
+        "1720.0": 16,
+        "22498.0": 11,
+        "6287.0": 9,
+        "10114.0": 9,
+        "13314.0": 9,
+        "1798.0": 7,
+        "7978.0": 7,
+        "4962.0": 7,
+        "17539.0": 6
+      }
+    },
+    "item_int_feats_81": {
+      "total": 1000,
+      "missing(<=0)": 659,
+      "missing_rate": "65.90%",
+      "valid_count": 339,
+      "min": 1.0,
+      "max": 2.0,
+      "mean": 1.4955752212389382,
+      "std": 0.5007194907113954,
+      "p50": 1.0,
+      "p90": 2.0,
+      "p99": 2.0,
+      "top10_values": {
+        "1.0": 171,
+        "2.0": 168
+      }
+    },
+    "item_int_feats_83": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 168,
+      "min": 1.0,
+      "max": 31.0,
+      "mean": 17.595238095238095,
+      "std": 9.198566729827586,
+      "p50": 15.5,
+      "p90": 28.0,
+      "p99": 30.330000000000013,
+      "top10_values": {
+        "28.0": 41,
+        "8.0": 23,
+        "6.0": 14,
+        "26.0": 13,
+        "11.0": 13,
+        "15.0": 9,
+        "9.0": 8,
+        "10.0": 7,
+        "20.0": 6,
+        "29.0": 5
+      }
+    },
+    "item_int_feats_84": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 168,
+      "min": 3.0,
+      "max": 226.0,
+      "mean": 131.13095238095238,
+      "std": 67.73358868547633,
+      "p50": 146.0,
+      "p90": 213.0,
+      "p99": 226.0,
+      "top10_values": {
+        "146.0": 21,
+        "226.0": 13,
+        "184.0": 9,
+        "212.0": 8,
+        "170.0": 6,
+        "153.0": 6,
+        "156.0": 5,
+        "79.0": 4,
+        "8.0": 4,
+        "115.0": 4
+      }
+    },
+    "item_int_feats_85": {
+      "total": 1000,
+      "missing(<=0)": 0,
+      "missing_rate": "0.00%",
+      "valid_count": 168,
+      "min": 4.0,
+      "max": 1001.0,
+      "mean": 439.8154761904762,
+      "std": 303.70503811793276,
+      "p50": 429.0,
+      "p90": 887.2000000000002,
+      "p99": 991.9700000000001,
+      "top10_values": {
+        "61.0": 17,
+        "140.0": 8,
+        "466.0": 7,
+        "128.0": 4,
+        "697.0": 4,
+        "508.0": 4,
+        "810.0": 3,
+        "265.0": 3,
+        "964.0": 3,
+        "197.0": 3
+      }
+    }
+  },
+  "scalar_dense": {},
+  "array_user_int": {
+    "user_int_feats_15": {
+      "array_dim": 13,
+      "columns": {},
+      "global": {
+        "total_values": 3232,
+        "valid(>0)": 3232,
+        "missing_rate": "0.00%",
+        "min": 5.0,
+        "max": 1171.0,
+        "mean": 544.1231435643564,
+        "top10_values": {
+          "213": 148,
+          "175": 131,
+          "253": 107,
+          "50": 102,
+          "842": 87,
+          "153": 71,
+          "928": 65,
+          "642": 58,
+          "574": 57,
+          "850": 49
+        }
+      }
+    },
+    "user_int_feats_60": {
+      "array_dim": 2,
+      "columns": {},
+      "global": {
+        "total_values": 617,
+        "valid(>0)": 617,
+        "missing_rate": "0.00%",
+        "min": 2.0,
+        "max": 2.0,
+        "mean": 2.0,
+        "top10_values": {
+          "2": 617
+        }
+      }
+    },
+    "user_int_feats_62": {
+      "array_dim": 5,
+      "columns": {},
+      "global": {
+        "total_values": 2114,
+        "valid(>0)": 2114,
+        "missing_rate": "0.00%",
+        "min": 2.0,
+        "max": 10.0,
+        "mean": 5.824976348155156,
+        "top10_values": {
+          "4": 697,
+          "9": 677,
+          "6": 446,
+          "2": 268,
+          "10": 19,
+          "3": 5,
+          "8": 2
+        }
+      }
+    },
+    "user_int_feats_63": {
+      "array_dim": 11,
+      "columns": {},
+      "global": {
+        "total_values": 2555,
+        "valid(>0)": 2433,
+        "missing_rate": "4.77%",
+        "min": 1.0,
+        "max": 45.0,
+        "mean": 27.924373201808468,
+        "top10_values": {
+          "45": 709,
+          "27": 686,
+          "15": 177,
+          "11": 141,
+          "17": 133,
+          "1": 83,
+          "22": 56,
+          "41": 52,
+          "38": 48,
+          "3": 46
+        }
+      }
+    },
+    "user_int_feats_64": {
+      "array_dim": 18,
+      "columns": {},
+      "global": {
+        "total_values": 3822,
+        "valid(>0)": 3822,
+        "missing_rate": "0.00%",
+        "min": 1.0,
+        "max": 50.0,
+        "mean": 23.36211407639979,
+        "top10_values": {
+          "2": 446,
+          "26": 423,
+          "14": 380,
+          "22": 315,
+          "45": 312,
+          "39": 179,
+          "48": 156,
+          "50": 151,
+          "4": 144,
+          "25": 138
+        }
+      }
+    },
+    "user_int_feats_65": {
+      "array_dim": 49,
+      "columns": {},
+      "global": {
+        "total_values": 5713,
+        "valid(>0)": 5713,
+        "missing_rate": "0.00%",
+        "min": 1.0,
+        "max": 442.0,
+        "mean": 216.97479432872396,
+        "top10_values": {
+          "139": 402,
+          "180": 259,
+          "163": 241,
+          "292": 185,
+          "26": 162,
+          "375": 160,
+          "216": 159,
+          "164": 149,
+          "107": 131,
+          "354": 113
+        }
+      }
+    },
+    "user_int_feats_66": {
+      "array_dim": 66,
+      "columns": {},
+      "global": {
+        "total_values": 7139,
+        "valid(>0)": 7139,
+        "missing_rate": "0.00%",
+        "min": 1.0,
+        "max": 1472.0,
+        "mean": 775.5939207171873,
+        "top10_values": {
+          "640": 274,
+          "1027": 158,
+          "1246": 144,
+          "1197": 131,
+          "283": 127,
+          "296": 124,
+          "1287": 124,
+          "943": 115,
+          "205": 113,
+          "396": 94
+        }
+      }
+    },
+    "user_int_feats_80": {
+      "array_dim": 5,
+      "columns": {},
+      "global": {
+        "total_values": 1158,
+        "valid(>0)": 1158,
+        "missing_rate": "0.00%",
+        "min": 1.0,
+        "max": 12.0,
+        "mean": 7.537996545768567,
+        "top10_values": {
+          "11": 220,
+          "6": 212,
+          "12": 159,
+          "8": 141,
+          "1": 126,
+          "9": 104,
+          "3": 95,
+          "10": 36,
+          "5": 22,
+          "2": 21
+        }
+      }
+    },
+    "user_int_feats_89": {
+      "array_dim": 10,
+      "columns": {},
+      "global": {
+        "total_values": 9450,
+        "valid(>0)": 8505,
+        "missing_rate": "10.00%",
+        "min": 2.0,
+        "max": 9.0,
+        "mean": 5.111111111111111,
+        "top10_values": {
+          "2": 2835,
+          "9": 1890,
+          "8": 1890,
+          "3": 1890
+        }
+      }
+    },
+    "user_int_feats_90": {
+      "array_dim": 10,
+      "columns": {},
+      "global": {
+        "total_values": 9090,
+        "valid(>0)": 8181,
+        "missing_rate": "10.00%",
+        "min": 2.0,
+        "max": 9.0,
+        "mean": 4.555555555555555,
+        "top10_values": {
+          "9": 1818,
+          "2": 1818,
+          "4": 1818,
+          "3": 1818,
+          "5": 909
+        }
+      }
+    },
+    "user_int_feats_91": {
+      "array_dim": 10,
+      "columns": {},
+      "global": {
+        "total_values": 5500,
+        "valid(>0)": 4950,
+        "missing_rate": "10.00%",
+        "min": 2.0,
+        "max": 9.0,
+        "mean": 5.222222222222222,
+        "top10_values": {
+          "4": 1100,
+          "9": 1100,
+          "5": 1100,
+          "3": 550,
+          "6": 550,
+          "2": 550
+        }
+      }
+    }
+  },
+  "array_item_int": {
+    "item_int_feats_11": {
+      "array_dim": 20,
+      "columns": {},
+      "global": {
+        "total_values": 2086,
+        "valid(>0)": 2086,
+        "missing_rate": "0.00%",
+        "min": 38.0,
+        "max": 32505.0,
+        "mean": 11609.843240651966,
+        "top10_values": {
+          "18959": 66,
+          "16872": 55,
+          "10526": 41,
+          "12351": 40,
+          "5213": 38,
+          "8814": 36,
+          "15639": 32,
+          "17658": 26,
+          "7161": 24,
+          "4976": 24
+        }
+      }
+    }
+  },
+  "feature_correlation": {
+    "analyzed_cols": 39,
+    "high_corr_pairs": [
+      {
+        "col_a": "user_int_feats_97",
+        "col_b": "user_int_feats_104",
+        "pearson": -0.91,
+        "suggestion": "高度相关，考虑删除其中一个"
+      },
+      {
+        "col_a": "item_int_feats_13",
+        "col_b": "item_int_feats_81",
+        "pearson": -1.0,
+        "suggestion": "高度相关，考虑删除其中一个"
+      }
+    ],
+    "corr_threshold": 0.9
+  },
+  "outlier_detection": {
+    "user_int_feats_1": {
+      "outlier_count": 224,
+      "outlier_rate": "22.4000%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_51": {
+      "outlier_count": 4,
+      "outlier_rate": "0.4004%",
+      "severity": "轻度",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_95": {
+      "outlier_count": 162,
+      "outlier_rate": "23.7537%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_96": {
+      "outlier_count": 63,
+      "outlier_rate": "19.5652%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_99": {
+      "outlier_count": 6,
+      "outlier_rate": "3.1915%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_100": {
+      "outlier_count": 7,
+      "outlier_rate": "4.5161%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_101": {
+      "outlier_count": 4,
+      "outlier_rate": "4.4444%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_102": {
+      "outlier_count": 8,
+      "outlier_rate": "6.5041%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_103": {
+      "outlier_count": 32,
+      "outlier_rate": "23.1884%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_106": {
+      "outlier_count": 204,
+      "outlier_rate": "24.2857%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    },
+    "user_int_feats_107": {
+      "outlier_count": 66,
+      "outlier_rate": "9.4286%",
+      "severity": "严重",
+      "suggestion": "需进一步分析"
+    }
+  },
+  "timestamp_fid_detect": {
+    "seq_a": {
+      "schema_ts_fid": null,
+      "auto_detected_ts_fids": [
+        {
+          "fid": 39,
+          "vocab": 1772725488,
+          "in_known_ts_fids": true,
+          "suggestion": "确认为时间戳，应设置为 ts_fid 而非普通 sideinfo"
+        }
+      ]
+    },
+    "seq_b": {
+      "schema_ts_fid": null,
+      "auto_detected_ts_fids": [
+        {
+          "fid": 67,
+          "vocab": 1772725643,
+          "in_known_ts_fids": true,
+          "suggestion": "确认为时间戳，应设置为 ts_fid 而非普通 sideinfo"
+        }
+      ]
+    },
+    "seq_c": {
+      "schema_ts_fid": null,
+      "auto_detected_ts_fids": [
+        {
+          "fid": 27,
+          "vocab": 1772725681,
+          "in_known_ts_fids": true,
+          "suggestion": "确认为时间戳，应设置为 ts_fid 而非普通 sideinfo"
+        }
+      ]
+    },
+    "seq_d": {
+      "schema_ts_fid": null,
+      "auto_detected_ts_fids": [
+        {
+          "fid": 26,
+          "vocab": 1772725621,
+          "in_known_ts_fids": true,
+          "suggestion": "确认为时间戳，应设置为 ts_fid 而非普通 sideinfo"
+        }
+      ]
+    }
+  },
+  "vocab_coverage": {
+    "seq_a": {
+      "fid_38": {
+        "schema_vocab": 1201293,
+        "actual_unique_ids": 17774,
+        "coverage_rate": "1.4796%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_39": {
+        "schema_vocab": 1772725488,
+        "actual_unique_ids": 321733,
+        "coverage_rate": "0.0181%",
+        "is_ts": true,
+        "note": "时间戳，跳过 Embedding"
+      },
+      "fid_40": {
+        "schema_vocab": 19,
+        "actual_unique_ids": 16,
+        "coverage_rate": "84.2105%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_41": {
+        "schema_vocab": 12,
+        "actual_unique_ids": 9,
+        "coverage_rate": "75.0000%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_42": {
+        "schema_vocab": 1018,
+        "actual_unique_ids": 406,
+        "coverage_rate": "39.8821%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_43": {
+        "schema_vocab": 3450,
+        "actual_unique_ids": 1262,
+        "coverage_rate": "36.5797%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_44": {
+        "schema_vocab": 15147,
+        "actual_unique_ids": 3001,
+        "coverage_rate": "19.8125%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_45": {
+        "schema_vocab": 9213,
+        "actual_unique_ids": 2388,
+        "coverage_rate": "25.9199%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_46": {
+        "schema_vocab": 18,
+        "actual_unique_ids": 11,
+        "coverage_rate": "61.1111%",
+        "is_ts": false,
+        "note": ""
+      }
+    },
+    "seq_b": {
+      "fid_67": {
+        "schema_vocab": 1772725643,
+        "actual_unique_ids": 421843,
+        "coverage_rate": "0.0238%",
+        "is_ts": true,
+        "note": "时间戳，跳过 Embedding"
+      },
+      "fid_68": {
+        "schema_vocab": 28,
+        "actual_unique_ids": 22,
+        "coverage_rate": "78.5714%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_69": {
+        "schema_vocab": 143233600,
+        "actual_unique_ids": 191930,
+        "coverage_rate": "0.1340%",
+        "is_ts": false,
+        "note": "实际词表远小于 schema，Embedding 表可大幅压缩"
+      },
+      "fid_70": {
+        "schema_vocab": 734,
+        "actual_unique_ids": 428,
+        "coverage_rate": "58.3106%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_71": {
+        "schema_vocab": 2691,
+        "actual_unique_ids": 1343,
+        "coverage_rate": "49.9071%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_72": {
+        "schema_vocab": 10490,
+        "actual_unique_ids": 3662,
+        "coverage_rate": "34.9094%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_73": {
+        "schema_vocab": 7239,
+        "actual_unique_ids": 2579,
+        "coverage_rate": "35.6265%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_74": {
+        "schema_vocab": 638924,
+        "actual_unique_ids": 14336,
+        "coverage_rate": "2.2438%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_75": {
+        "schema_vocab": 30,
+        "actual_unique_ids": 19,
+        "coverage_rate": "63.3333%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_76": {
+        "schema_vocab": 164032,
+        "actual_unique_ids": 8800,
+        "coverage_rate": "5.3648%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_77": {
+        "schema_vocab": 168,
+        "actual_unique_ids": 126,
+        "coverage_rate": "75.0000%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_78": {
+        "schema_vocab": 4320,
+        "actual_unique_ids": 2521,
+        "coverage_rate": "58.3565%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_79": {
+        "schema_vocab": 11781,
+        "actual_unique_ids": 6367,
+        "coverage_rate": "54.0446%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_88": {
+        "schema_vocab": 288959,
+        "actual_unique_ids": 12268,
+        "coverage_rate": "4.2456%",
+        "is_ts": false,
+        "note": ""
+      }
+    },
+    "seq_c": {
+      "fid_27": {
+        "schema_vocab": 1772725681,
+        "actual_unique_ids": 441676,
+        "coverage_rate": "0.0249%",
+        "is_ts": true,
+        "note": "时间戳，跳过 Embedding"
+      },
+      "fid_28": {
+        "schema_vocab": 75,
+        "actual_unique_ids": 59,
+        "coverage_rate": "78.6667%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_29": {
+        "schema_vocab": 8227608,
+        "actual_unique_ids": 172472,
+        "coverage_rate": "2.0963%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_30": {
+        "schema_vocab": 858,
+        "actual_unique_ids": 508,
+        "coverage_rate": "59.2075%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_31": {
+        "schema_vocab": 7086,
+        "actual_unique_ids": 2946,
+        "coverage_rate": "41.5749%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_32": {
+        "schema_vocab": 7,
+        "actual_unique_ids": 6,
+        "coverage_rate": "85.7143%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_33": {
+        "schema_vocab": 4,
+        "actual_unique_ids": 3,
+        "coverage_rate": "75.0000%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_34": {
+        "schema_vocab": 1986300,
+        "actual_unique_ids": 16901,
+        "coverage_rate": "0.8509%",
+        "is_ts": false,
+        "note": "实际词表远小于 schema，Embedding 表可大幅压缩"
+      },
+      "fid_35": {
+        "schema_vocab": 3004,
+        "actual_unique_ids": 1586,
+        "coverage_rate": "52.7963%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_36": {
+        "schema_vocab": 1511293,
+        "actual_unique_ids": 55120,
+        "coverage_rate": "3.6472%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_37": {
+        "schema_vocab": 9975,
+        "actual_unique_ids": 4090,
+        "coverage_rate": "41.0025%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_47": {
+        "schema_vocab": 278677640,
+        "actual_unique_ids": 287307,
+        "coverage_rate": "0.1031%",
+        "is_ts": false,
+        "note": "实际词表远小于 schema，Embedding 表可大幅压缩"
+      }
+    },
+    "seq_d": {
+      "fid_17": {
+        "schema_vocab": 5,
+        "actual_unique_ids": 4,
+        "coverage_rate": "80.0000%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_18": {
+        "schema_vocab": 975,
+        "actual_unique_ids": 421,
+        "coverage_rate": "43.1795%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_19": {
+        "schema_vocab": 3420,
+        "actual_unique_ids": 1465,
+        "coverage_rate": "42.8363%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_20": {
+        "schema_vocab": 11298,
+        "actual_unique_ids": 3841,
+        "coverage_rate": "33.9972%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_21": {
+        "schema_vocab": 5106,
+        "actual_unique_ids": 2450,
+        "coverage_rate": "47.9828%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_22": {
+        "schema_vocab": 510191,
+        "actual_unique_ids": 17885,
+        "coverage_rate": "3.5055%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_23": {
+        "schema_vocab": 674034,
+        "actual_unique_ids": 123038,
+        "coverage_rate": "18.2540%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_24": {
+        "schema_vocab": 603,
+        "actual_unique_ids": 23,
+        "coverage_rate": "3.8143%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_25": {
+        "schema_vocab": 15,
+        "actual_unique_ids": 10,
+        "coverage_rate": "66.6667%",
+        "is_ts": false,
+        "note": ""
+      },
+      "fid_26": {
+        "schema_vocab": 1772725621,
+        "actual_unique_ids": 50828,
+        "coverage_rate": "0.0029%",
+        "is_ts": true,
+        "note": "时间戳，跳过 Embedding"
+      }
+    }
+  },
+  "cross_domain_overlap": {
+    "seq_a×seq_b": {
+      "fid_a": 38,
+      "fid_b": 68,
+      "unique_a": 17774,
+      "unique_b": 22,
+      "overlap": 0,
+      "overlap_rate_a": "0.00%",
+      "overlap_rate_b": "0.00%",
+      "suggestion": "各域商品池差异较大，建议独立 Embedding"
+    },
+    "seq_a×seq_c": {
+      "fid_a": 38,
+      "fid_b": 28,
+      "unique_a": 17774,
+      "unique_b": 59,
+      "overlap": 0,
+      "overlap_rate_a": "0.00%",
+      "overlap_rate_b": "0.00%",
+      "suggestion": "各域商品池差异较大，建议独立 Embedding"
+    },
+    "seq_a×seq_d": {
+      "fid_a": 38,
+      "fid_b": 17,
+      "unique_a": 17774,
+      "unique_b": 4,
+      "overlap": 0,
+      "overlap_rate_a": "0.00%",
+      "overlap_rate_b": "0.00%",
+      "suggestion": "各域商品池差异较大，建议独立 Embedding"
+    },
+    "seq_b×seq_c": {
+      "fid_a": 68,
+      "fid_b": 28,
+      "unique_a": 22,
+      "unique_b": 59,
+      "overlap": 16,
+      "overlap_rate_a": "72.73%",
+      "overlap_rate_b": "27.12%",
+      "suggestion": "Embedding 可考虑共享"
+    },
+    "seq_b×seq_d": {
+      "fid_a": 68,
+      "fid_b": 17,
+      "unique_a": 22,
+      "unique_b": 4,
+      "overlap": 3,
+      "overlap_rate_a": "13.64%",
+      "overlap_rate_b": "75.00%",
+      "suggestion": "Embedding 可考虑共享"
+    },
+    "seq_c×seq_d": {
+      "fid_a": 28,
+      "fid_b": 17,
+      "unique_a": 59,
+      "unique_b": 4,
+      "overlap": 1,
+      "overlap_rate_a": "1.69%",
+      "overlap_rate_b": "25.00%",
+      "suggestion": "各域商品池差异较大，建议独立 Embedding"
+    }
+  },
+  "summary_suggestions": [
+    "⚠️ item_int_feats_8 缺失率 52.20%，建议删除或填充",
+    "⚠️ item_int_feats_81 缺失率 65.90%，建议删除或填充",
+    "⚠️ 发现 2 对高度相关特征（≥0.9），建议删除其中一个：user_int_feats_97↔user_int_feats_104, item_int_feats_13↔item_int_feats_81",
+    "⚠️ seq_a 检测到时间戳 fid=['39']，但 schema ts_fid=None，建议在 schema.json 中配置 ts_fid 以避免将时间戳当作 item_id",
+    "⚠️ seq_b 检测到时间戳 fid=['67']，但 schema ts_fid=None，建议在 schema.json 中配置 ts_fid 以避免将时间戳当作 item_id",
+    "⚠️ seq_c 检测到时间戳 fid=['27']，但 schema ts_fid=None，建议在 schema.json 中配置 ts_fid 以避免将时间戳当作 item_id",
+    "⚠️ seq_d 检测到时间戳 fid=['26']，但 schema ts_fid=None，建议在 schema.json 中配置 ts_fid 以避免将时间戳当作 item_id",
+    "⚠️ 以下特征存在明显异常值，建议 clip 或替换为用户均值：['user_int_feats_1', 'user_int_feats_51', 'user_int_feats_95', 'user_int_feats_96', 'user_int_feats_99']"
+  ]
+}
