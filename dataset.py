@@ -21,6 +21,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import torch
+import torch.nn.functional as F
 import torch.multiprocessing
 from torch.utils.data import IterableDataset, DataLoader
 from typing import Any, Dict, Iterator, List, Optional, Tuple
@@ -106,18 +107,34 @@ class FeatureSchema:
 # out of shared memory when many DataLoader workers are active.
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-# Time-delta bucket boundaries (64 edges -> 65 buckets: 0=padding, 1..64).
+# Time-delta bucket boundaries (V2: 32 edges -> 33 buckets: 0=padding, 1..33).
+#
+# Design principle: log-scale distribution with extra density in the 1h-24h
+# window, which is the most predictive range for ad conversion.
+#
+# Bucket layout:
+#   1- 4 : 0-5min    (30s / 1min / 2min / 5min)       -- real-time / session-start
+#   5-10 : 5min-1h   (10/15/20/30/45/60min)            -- within-session
+#  11-18 : 1h-24h    (1.5/2/3/4/6/9/12/24h)            -- KEY WINDOW, densified
+#  19-24 : 1-7 days  (1/2/3/4/5/6/7d)                  -- recent interest
+#  25-27 : 1-4 weeks (2w/3w/4w)                         -- mid-term interest
+#  28-31 : 1-12 months (2/3/6/12 months)                -- long-term interest
+#  32-33 : 1-2 years                                    -- historical tail
 BUCKET_BOUNDARIES = np.array([
-    5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
-    120, 180, 240, 300, 360, 420, 480, 540, 600,
-    900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600,
-    5400, 7200, 9000, 10800, 12600, 14400, 16200, 18000, 19800, 21600,
-    32400, 43200, 54000, 64800, 75600, 86400,
+    # 0-5 min: real-time / session start
+    30, 60, 120, 300,
+    # 5 min - 1 h: within-session
+    600, 900, 1200, 1800, 2700, 3600,
+    # 1 h - 24 h: KEY WINDOW — densified (8 buckets)
+    5400, 7200, 10800, 14400, 21600, 32400, 43200, 86400,
+    # 1 - 7 days: recent interest
     172800, 259200, 345600, 432000, 518400, 604800,
-    1123200, 1641600, 2160000, 2592000,
-    4320000, 6048000, 7776000,
-    11664000, 15552000,
-    31536000,
+    # 1 - 4 weeks: mid-term interest
+    1209600, 1814400, 2592000,
+    # 1 - 12 months: long-term interest
+    5184000, 7776000, 15552000, 31536000,
+    # > 1 year: historical tail
+    63072000,
 ], dtype=np.int64)
 
 # Total number of time-bucket embedding slots (= number of boundaries + 1, with
@@ -365,12 +382,35 @@ class PCVRParquetDataset(IterableDataset):
     ) -> Iterator[Dict[str, Any]]:
         """Concatenate the buffered batches, shuffle at the row level, then
         re-slice and yield batch-sized chunks.
+
+        Dynamic padding may produce tensors with different trailing sizes
+        across sub-batches (e.g. seq tensor (B, S, L) where L varies).
+        We pad them to the maximum L in the buffer before concatenating.
         """
         merged: Dict[str, torch.Tensor] = {}
         non_tensor_keys: Dict[str, Any] = {}
         for k in buffer[0].keys():
             if isinstance(buffer[0][k], torch.Tensor):
-                merged[k] = torch.cat([b[k] for b in buffer], dim=0)
+                tensors = [b[k] for b in buffer]
+                if tensors[0].ndim >= 2:
+                    # Check if trailing dimensions differ (dynamic padding)
+                    max_sizes = list(tensors[0].shape[1:])
+                    needs_pad = False
+                    for t in tensors[1:]:
+                        for d in range(len(max_sizes)):
+                            if t.shape[d + 1] != max_sizes[d]:
+                                needs_pad = True
+                                max_sizes[d] = max(max_sizes[d], t.shape[d + 1])
+                    if needs_pad:
+                        padded = []
+                        for t in tensors:
+                            pad_widths = []
+                            # F.pad expects widths in reverse dim order
+                            for d in reversed(range(len(max_sizes))):
+                                pad_widths.extend([0, max_sizes[d] - t.shape[d + 1]])
+                            padded.append(F.pad(t, pad_widths, value=0))
+                        tensors = padded
+                merged[k] = torch.cat(tensors, dim=0)
             else:
                 non_tensor_keys[k] = buffer[0][k]
         total_rows = merged['label'].shape[0]
@@ -624,7 +664,10 @@ class PCVRParquetDataset(IterableDataset):
                 else:
                     slice_c[:] = 0
 
-            result[domain] = torch.from_numpy(out.copy())
+            # Dynamic padding: trim to the longest sequence in this batch
+            # instead of the global max_len, saving embedding / attention FLOPs.
+            batch_max_len = int(lengths.max()) if int(lengths.max()) > 0 else 1
+            result[domain] = torch.from_numpy(out[:, :, :batch_max_len].copy())
             result[f'{domain}_len'] = torch.from_numpy(lengths.copy())
 
             # Time bucketing.
@@ -664,7 +707,10 @@ class PCVRParquetDataset(IterableDataset):
                 buckets[ts_padded == 0] = 0
                 time_bucket[:] = buckets
 
-            result[f'{domain}_time_bucket'] = torch.from_numpy(time_bucket.copy())
+            # Trim time_bucket to the same dynamic length
+            result[f'{domain}_time_bucket'] = torch.from_numpy(
+                time_bucket[:, :batch_max_len].copy()
+            )
 
         return result
 

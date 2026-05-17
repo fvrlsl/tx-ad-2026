@@ -348,7 +348,7 @@
   "seq": {
     "seq_a": {
       "prefix": "domain_a_seq",
-      "ts_fid": null,
+      "ts_fid": 39,
       "features": [
         [
           38,
@@ -390,7 +390,7 @@
     },
     "seq_b": {
       "prefix": "domain_b_seq",
-      "ts_fid": null,
+      "ts_fid": 67,
       "features": [
         [
           67,
@@ -452,7 +452,7 @@
     },
     "seq_c": {
       "prefix": "domain_c_seq",
-      "ts_fid": null,
+      "ts_fid": 27,
       "features": [
         [
           27,
@@ -506,7 +506,7 @@
     },
     "seq_d": {
       "prefix": "domain_d_seq",
-      "ts_fid": null,
+      "ts_fid": 26,
       "features": [
         [
           17,

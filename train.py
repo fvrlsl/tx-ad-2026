@@ -83,8 +83,15 @@ def parse_args() -> argparse.Namespace:
                         help='Run validation every N steps '
                              '(0 = only at the end of each epoch)')
     parser.add_argument('--seq_max_lens', type=str,
-                        default='seq_a:256,seq_b:256,seq_c:512,seq_d:512',
-                        help='Per-domain sequence truncation, format: seq_d:256,seq_c:128')
+                        default='seq_a:128,seq_b:600,seq_c:512,seq_d:1200',
+                        help='Per-domain sequence max length (safety OOM cap only). '
+                             'When seq_encoder_type=longer, the real filtering is done '
+                             'by target-aware TopK inside LongerEncoder, so this value '
+                             'should be >= p90 of each domain to avoid pre-truncation '
+                             'information loss. Data stats: '
+                             'seq_a mean=38 p90=95, seq_b mean=569 p90=1393, '
+                             'seq_c mean=449 p90=887, seq_d mean=1100 p90=2215. '
+                             'Format: domain:length comma-separated, e.g. seq_a:128,seq_b:600')
 
     # Model hyperparameters.
     parser.add_argument('--d_model', type=int, default=64,
@@ -121,6 +128,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--seq_causal', action='store_true', default=False,
                         help='Whether the LongerEncoder self-attention uses a causal mask '
                              '(only effective when --seq_encoder_type=longer)')
+    parser.add_argument('--use_target_aware_topk', action='store_true', default=False,
+                        help='Enable target-aware TopK in LongerEncoder: uses mean-pooled '
+                             'item NS embedding as query to score and select the top_k most '
+                             'relevant sequence tokens (SIM-style), instead of recency-based '
+                             'truncation. Requires seq_encoder_type=longer. '
+                             'When enabled, seq_max_lens should be set to >= p90 of each domain '
+                             'so the full behaviour history is available for retrieval.')
+    parser.add_argument('--use_query_projection', action='store_true', default=False,
+                        help='Apply LayerNorm + Linear + SiLU projection to the target_query '
+                             'vector before TopK scoring. Helps the model learn a better query '
+                             'representation when use_target_aware_topk is enabled. '
+                             'Only takes effect when --use_target_aware_topk is also set.')
+    parser.add_argument('--pre_topk', type=int, default=256,
+                        help='Two-stage TopK: recency pre-filter size before target-aware '
+                             'fine-ranking. Set to 0 to disable pre-filtering and score '
+                             'the full sequence (default: 256).')
     parser.add_argument('--action_num', type=int, default=1,
                         help='Classifier output dimension '
                              '(1 = single binary-classification logit; >1 = multi-label)')
@@ -178,6 +201,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--focal_gamma', type=float, default=2.0,
                         help='Focal Loss focusing parameter gamma '
                              '(effective only when --loss_type=focal)')
+
+    # Mixed precision training.
+    parser.add_argument('--use_amp', action='store_true', default=False,
+                        help='Enable AMP (Automatic Mixed Precision) training with fp16. '
+                             'Uses torch.cuda.amp.autocast + GradScaler for ~1.5-2x speedup '
+                             'on modern NVIDIA GPUs. Only effective on CUDA devices.')
 
     # Sparse optimizer.
     parser.add_argument('--sparse_lr', type=float, default=0.05,
@@ -452,6 +481,9 @@ def main() -> None:
             "ns_tokenizer_type": args.ns_tokenizer_type,
             "user_ns_tokens": args.user_ns_tokens,
             "item_ns_tokens": args.item_ns_tokens,
+            "use_target_aware_topk": args.use_target_aware_topk,
+            "use_query_projection": args.use_query_projection,
+            "pre_topk": args.pre_topk,
         }
 
         model = PCVRHyFormer(**model_args).to(args.device)
@@ -503,6 +535,7 @@ def main() -> None:
         ns_groups_path=args.ns_groups_json if args.ns_groups_json and os.path.exists(args.ns_groups_json) else None,
         eval_every_n_steps=args.eval_every_n_steps,
         train_config=vars(args),
+        use_amp=args.use_amp,
     )
 
     trainer.train()

@@ -636,11 +636,15 @@ class LongerEncoder(nn.Module):
         top_k: int = 50,
         hidden_mult: int = 4,
         dropout: float = 0.0,
-        causal: bool = False
+        causal: bool = False,
+        pre_topk: int = 0,
     ) -> None:
         super().__init__()
         self.top_k = top_k
         self.causal = causal
+        # Two-stage TopK: recency pre-filter to pre_topk, then target-aware
+        # fine-rank to top_k.  0 means disabled (score full sequence).
+        self.pre_topk = pre_topk
 
         # Pre-LN for attention
         self.norm_q = nn.LayerNorm(d_model)
@@ -718,12 +722,96 @@ class LongerEncoder(nn.Module):
 
         return top_k_tokens, new_padding_mask, position_indices
 
+    def _gather_top_k_target_aware(
+        self,
+        x: torch.Tensor,
+        key_padding_mask: torch.Tensor,
+        target_query: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Two-stage target-aware TopK selection.
+
+        Stage 1 (recency pre-filter): when ``pre_topk > 0`` and L > pre_topk,
+        keep the most-recent ``pre_topk`` valid tokens per sample. This reduces
+        the scoring cost from O(L) to O(pre_topk) per sample.
+
+        Stage 2 (target-aware fine-rank): score the remaining candidates via
+        dot-product with ``target_query`` and pick the final ``top_k`` tokens,
+        weighted by softmax-normalised relevance.
+
+        Args:
+            x: (B, L, D), sequence token embeddings after projection.
+            key_padding_mask: (B, L), True indicates padding positions.
+            target_query: (B, D), target item embedding (e.g. item_ns mean).
+
+        Returns:
+            top_k_tokens: (B, top_k, D), selected tokens weighted by relevance.
+            new_padding_mask: (B, top_k), True indicates padding.
+            position_indices: (B, top_k), original position indices for RoPE.
+        """
+        B, L, D = x.shape
+        device = x.device
+
+        # ---- Stage 1: recency pre-filter (optional) ----
+        if self.pre_topk > 0 and L > self.pre_topk:
+            valid_len = (~key_padding_mask).sum(dim=1)  # (B,)
+            actual_pre = torch.clamp(valid_len, max=self.pre_topk)  # (B,)
+            start_pos = valid_len - actual_pre  # (B,)
+
+            offsets = torch.arange(self.pre_topk, device=device).unsqueeze(0)  # (1, pre_topk)
+            pre_indices = start_pos.unsqueeze(1) + offsets  # (B, pre_topk)
+            pre_indices = torch.clamp(pre_indices, min=0, max=L - 1)
+
+            idx_exp = pre_indices.unsqueeze(-1).expand(-1, -1, D)
+            x = torch.gather(x, dim=1, index=idx_exp)  # (B, pre_topk, D)
+
+            pre_pad_count = self.pre_topk - actual_pre
+            pre_pos = torch.arange(self.pre_topk, device=device).unsqueeze(0)
+            key_padding_mask = pre_pos < pre_pad_count.unsqueeze(1)  # (B, pre_topk)
+            x = x * (~key_padding_mask).unsqueeze(-1).float()
+
+            # Keep original position indices for RoPE
+            orig_indices = pre_indices  # (B, pre_topk)
+        else:
+            orig_indices = None
+
+        # ---- Stage 2: target-aware fine-rank ----
+        B2, L2, D2 = x.shape
+
+        scores = torch.bmm(x, target_query.unsqueeze(-1)).squeeze(-1)  # (B, L2)
+        scores = scores.masked_fill(key_padding_mask, float('-inf'))
+
+        valid_len2 = (~key_padding_mask).sum(dim=1)  # (B,)
+        actual_k = torch.clamp(valid_len2, max=self.top_k)  # (B,)
+
+        topk_scores, indices = torch.topk(scores, self.top_k, dim=1, sorted=True)
+
+        pad_count = self.top_k - actual_k  # (B,)
+        pos_indices = torch.arange(self.top_k, device=device).unsqueeze(0)
+        new_padding_mask = pos_indices < pad_count.unsqueeze(1)  # (B, top_k)
+
+        safe_scores = topk_scores.masked_fill(new_padding_mask, 0.0)
+        relevance_weights = torch.softmax(safe_scores, dim=1)
+        relevance_weights = relevance_weights * (~new_padding_mask).float()
+
+        indices_expanded = indices.unsqueeze(-1).expand(-1, -1, D2)
+        top_k_tokens = torch.gather(x, dim=1, index=indices_expanded)
+        top_k_tokens = top_k_tokens * relevance_weights.unsqueeze(-1)
+
+        # Map indices back to original sequence positions for RoPE
+        if orig_indices is not None:
+            position_indices = torch.gather(orig_indices, dim=1, index=indices)
+        else:
+            position_indices = indices
+
+        return top_k_tokens, new_padding_mask, position_indices
+
     def forward(
         self,
         x: torch.Tensor,
         key_padding_mask: Optional[torch.Tensor] = None,
         rope_cos: Optional[torch.Tensor] = None,
         rope_sin: Optional[torch.Tensor] = None,
+        target_query: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Applies the LongerEncoder with adaptive cross/self attention.
 
@@ -733,6 +821,9 @@ class LongerEncoder(nn.Module):
             rope_cos: (1, L, head_dim), RoPE cosine values (length must cover
                 original sequence length L).
             rope_sin: (1, L, head_dim), RoPE sine values.
+            target_query: (B, D), optional target item embedding for target-aware
+                TopK selection. When provided and L > top_k, uses relevance-based
+                retrieval instead of recency-based truncation.
 
         Returns:
             output: (B, top_k, D), compressed sequence.
@@ -742,8 +833,13 @@ class LongerEncoder(nn.Module):
 
         if L > self.top_k:
             # === Cross Attention mode (first MultiSeqHyFormerBlock) ===
-            # 1. Extract latest top_k tokens as query
-            q, new_mask, q_pos_indices = self._gather_top_k(x, key_padding_mask)
+            # 1. Select top_k tokens: target-aware (relevance) or recency-based
+            if target_query is not None:
+                q, new_mask, q_pos_indices = self._gather_top_k_target_aware(
+                    x, key_padding_mask, target_query
+                )
+            else:
+                q, new_mask, q_pos_indices = self._gather_top_k(x, key_padding_mask)
 
             # 2. Pre-LN
             q_normed = self.norm_q(q)
@@ -815,7 +911,8 @@ def create_sequence_encoder(
     hidden_mult: int = 4,
     dropout: float = 0.0,
     top_k: int = 50,
-    causal: bool = False
+    causal: bool = False,
+    pre_topk: int = 0,
 ) -> nn.Module:
     """Creates a sequence encoder of the specified type.
 
@@ -828,6 +925,7 @@ def create_sequence_encoder(
         top_k: Compression length for LongerEncoder (only used by longer).
         causal: Whether to use causal mask in LongerEncoder (only used by
             longer).
+        pre_topk: Two-stage recency pre-filter size (0 = disabled).
 
     Returns:
         A sequence encoder module.
@@ -837,7 +935,7 @@ def create_sequence_encoder(
     elif encoder_type == 'transformer':
         return TransformerEncoder(d_model, num_heads, hidden_mult, dropout)
     elif encoder_type == 'longer':
-        return LongerEncoder(d_model, num_heads, top_k, hidden_mult, dropout, causal)
+        return LongerEncoder(d_model, num_heads, top_k, hidden_mult, dropout, causal, pre_topk=pre_topk)
     else:
         raise ValueError(f"Unknown encoder type: {encoder_type}")
 
@@ -867,7 +965,8 @@ class MultiSeqHyFormerBlock(nn.Module):
         dropout: float = 0.0,
         top_k: int = 50,
         causal: bool = False,
-        rank_mixer_mode: str = 'full'
+        rank_mixer_mode: str = 'full',
+        pre_topk: int = 0,
     ) -> None:
         super().__init__()
         self.num_sequences = num_sequences
@@ -883,7 +982,8 @@ class MultiSeqHyFormerBlock(nn.Module):
                 hidden_mult=hidden_mult,
                 dropout=dropout,
                 top_k=top_k,
-                causal=causal
+                causal=causal,
+                pre_topk=pre_topk,
             )
             for _ in range(num_sequences)
         ])
@@ -917,6 +1017,7 @@ class MultiSeqHyFormerBlock(nn.Module):
         seq_padding_masks: list,
         rope_cos_list: Optional[List[torch.Tensor]] = None,
         rope_sin_list: Optional[List[torch.Tensor]] = None,
+        target_query_list: Optional[List[torch.Tensor]] = None,
     ) -> Tuple[list, torch.Tensor, list, list]:
         """Processes one multi-sequence HyFormer block step.
 
@@ -927,6 +1028,9 @@ class MultiSeqHyFormerBlock(nn.Module):
             seq_padding_masks: List of (B, L_i) masks, length S.
             rope_cos_list: List of (1, L_i, head_dim) tensors, length S.
             rope_sin_list: List of (1, L_i, head_dim) tensors, length S.
+            target_query_list: Optional list of (B, D) target item embeddings,
+                one per sequence domain. When provided and the encoder is a
+                LongerEncoder, enables target-aware TopK selection.
 
         Returns:
             A tuple (next_q_list, next_ns, next_seq_list, next_masks), where
@@ -944,10 +1048,19 @@ class MultiSeqHyFormerBlock(nn.Module):
         for i in range(S):
             rc = rope_cos_list[i] if rope_cos_list is not None else None
             rs = rope_sin_list[i] if rope_sin_list is not None else None
-            result = self.seq_encoders[i](
-                seq_tokens_list[i], seq_padding_masks[i],
-                rope_cos=rc, rope_sin=rs,
-            )
+            tq = target_query_list[i] if target_query_list is not None else None
+            encoder = self.seq_encoders[i]
+            # LongerEncoder supports target_query; other encoders ignore it
+            if tq is not None and isinstance(encoder, LongerEncoder):
+                result = encoder(
+                    seq_tokens_list[i], seq_padding_masks[i],
+                    rope_cos=rc, rope_sin=rs, target_query=tq,
+                )
+            else:
+                result = encoder(
+                    seq_tokens_list[i], seq_padding_masks[i],
+                    rope_cos=rc, rope_sin=rs,
+                )
             next_seq_i, mask_i = result
             next_seqs.append(next_seq_i)
             next_masks.append(mask_i)
@@ -1229,9 +1342,17 @@ class PCVRHyFormer(nn.Module):
         ns_tokenizer_type: str = 'rankmixer',
         user_ns_tokens: int = 0,
         item_ns_tokens: int = 0,
+        # Target-aware TopK
+        use_target_aware_topk: bool = True,
+        # Query projection: LayerNorm + Linear on target_query before TopK scoring
+        use_query_projection: bool = False,
+        # Two-stage TopK: recency pre-filter size (0 = disabled)
+        pre_topk: int = 0,
     ) -> None:
         super().__init__()
 
+        self.use_target_aware_topk = use_target_aware_topk
+        self.use_query_projection = use_query_projection
         self.d_model = d_model
         self.emb_dim = emb_dim
         self.action_num = action_num
@@ -1401,6 +1522,7 @@ class PCVRHyFormer(nn.Module):
                 top_k=seq_top_k,
                 causal=seq_causal,
                 rank_mixer_mode=rank_mixer_mode,
+                pre_topk=pre_topk,
             )
             for _ in range(num_hyformer_blocks)
         ])
@@ -1420,6 +1542,17 @@ class PCVRHyFormer(nn.Module):
 
         # Dropout
         self.emb_dropout = nn.Dropout(dropout_rate)
+
+        # Query projection: LayerNorm + Linear to refine target_query signal
+        # Only instantiated when use_query_projection=True to avoid unused params
+        if use_query_projection:
+            self.query_proj = nn.Sequential(
+                nn.LayerNorm(d_model),
+                nn.Linear(d_model, d_model),
+                nn.SiLU(),
+            )
+        else:
+            self.query_proj = None
 
         # Classifier
         self.clsfier = nn.Sequential(
@@ -1587,9 +1720,20 @@ class PCVRHyFormer(nn.Module):
         ns_tokens: torch.Tensor,
         seq_tokens_list: list,
         seq_masks_list: list,
-        apply_dropout: bool = True
+        apply_dropout: bool = True,
+        target_query: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        """Runs the multi-sequence block stack with dropout and output projection."""
+        """Runs the multi-sequence block stack with dropout and output projection.
+
+        Args:
+            q_tokens_list: List of (B, Nq, D) per-sequence query tokens.
+            ns_tokens: (B, Nns, D) non-sequence tokens.
+            seq_tokens_list: List of (B, L_i, D) sequence token embeddings.
+            seq_masks_list: List of (B, L_i) padding masks.
+            apply_dropout: Whether to apply embedding dropout.
+            target_query: (B, D) target item embedding used for target-aware
+                TopK in LongerEncoder. Broadcast to all sequence domains.
+        """
         if apply_dropout:
             q_tokens_list = [self.emb_dropout(q) for q in q_tokens_list]
             ns_tokens = self.emb_dropout(ns_tokens)
@@ -1599,6 +1743,10 @@ class PCVRHyFormer(nn.Module):
         curr_ns = ns_tokens
         curr_seqs = seq_tokens_list
         curr_masks = seq_masks_list
+
+        # Broadcast the same target_query to every sequence domain
+        num_seqs = len(seq_tokens_list)
+        target_query_list = [target_query] * num_seqs if target_query is not None else None
 
         for block in self.blocks:
             # Precompute RoPE cos/sin for each sequence
@@ -1621,7 +1769,11 @@ class PCVRHyFormer(nn.Module):
                 seq_padding_masks=curr_masks,
                 rope_cos_list=rope_cos_list,
                 rope_sin_list=rope_sin_list,
+                target_query_list=target_query_list,
             )
+            # After the first block, LongerEncoder compresses L→top_k,
+            # so subsequent blocks operate in self-attention mode (no target_query needed)
+            target_query_list = None
 
         # Output: concatenate all sequences' Q tokens then project via MLP
         B = curr_qs[0].shape[0]
@@ -1665,9 +1817,17 @@ class PCVRHyFormer(nn.Module):
         q_tokens_list = self.query_generator(ns_tokens, seq_tokens_list, seq_masks_list)
 
         # 4. Dropout + MultiSeqHyFormerBlock stack + output projection
+        # Optionally use mean-pooled item NS as target query for target-aware TopK
+        if self.use_target_aware_topk:
+            target_query = item_ns.mean(dim=1)  # (B, D)
+            if self.use_query_projection and self.query_proj is not None:
+                target_query = self.query_proj(target_query)
+        else:
+            target_query = None
         output = self._run_multi_seq_blocks(
             q_tokens_list, ns_tokens, seq_tokens_list, seq_masks_list,
-            apply_dropout=self.training
+            apply_dropout=self.training,
+            target_query=target_query,
         )
 
         # 5. Classifier
@@ -1705,9 +1865,16 @@ class PCVRHyFormer(nn.Module):
 
         q_tokens_list = self.query_generator(ns_tokens, seq_tokens_list, seq_masks_list)
 
+        if self.use_target_aware_topk:
+            target_query = item_ns.mean(dim=1)  # (B, D)
+            if self.use_query_projection and self.query_proj is not None:
+                target_query = self.query_proj(target_query)
+        else:
+            target_query = None
         output = self._run_multi_seq_blocks(
             q_tokens_list, ns_tokens, seq_tokens_list, seq_masks_list,
-            apply_dropout=False
+            apply_dropout=False,
+            target_query=target_query,
         )
 
         logits = self.clsfier(output)

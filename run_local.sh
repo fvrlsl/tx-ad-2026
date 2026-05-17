@@ -23,7 +23,7 @@ mkdir -p "${CKPT_DIR}" "${LOG_DIR}" "${TF_DIR}"
 export TRAIN_TF_EVENTS_PATH="${TF_DIR}"
 
 "${VENV}/bin/python3" -u "${SCRIPT_DIR}/train.py" \
-    --data_dir       "${SCRIPT_DIR}" \
+    --data_dir       "${SCRIPT_DIR}/data_analysis" \
     --schema_path    "${SCRIPT_DIR}/schema.json" \
     --ckpt_dir       "${CKPT_DIR}" \
     --log_dir        "${LOG_DIR}" \

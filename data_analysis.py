@@ -412,15 +412,52 @@ def run_analysis(data_path: str, schema_path: str, output_dir: str,
     total_rows = len(df)
     print(f'      总行数: {total_rows:,}，列数: {len(df.columns)}')
 
+    # 1b. 读取数据后立即打印前几行到日志（不写文件，直接输出到 stdout/pod logs）
+    # 策略：只打 3 行；序列字段仅在 row[0] 完整打印前5个元素，其余行跳过序列字段
+    preview_n = min(3, total_rows)
+    preview_df = df.head(preview_n)
+    first_row = preview_df.iloc[0]
+    seq_col_set = {col for col, val in first_row.items()
+                   if hasattr(val, "__iter__") and not isinstance(val, str)}
+    print(f"\n[DATA PREVIEW] ======== 训练数据预览（前 {preview_n} 行，共 {len(df.columns)} 列）========")
+    print(f"[DATA PREVIEW] columns: {list(df.columns)}")
+    print(f"[DATA PREVIEW] 序列字段（共 {len(seq_col_set)} 个）: {sorted(seq_col_set)}")
+    print("[DATA PREVIEW] " + "─" * 60)
+    def _fmt_val(val) -> str:
+        """格式化单个字段值：float 保留 6 位小数，list/array 不换行输出。"""
+        if isinstance(val, float):
+            return f"{val:.6f}"
+        if isinstance(val, (list, np.ndarray)):
+            items = val.tolist() if isinstance(val, np.ndarray) else val
+            inner = ", ".join(f"{v:.6f}" if isinstance(v, float) else str(v) for v in items)
+            return f"[{inner}]"
+        return str(val)
+
+    for i, (_, row) in enumerate(preview_df.iterrows()):
+        print(f"[DATA PREVIEW] --- row[{i}] ---")
+        for col, val in row.items():
+            if col in seq_col_set:
+                if i == 0:
+                    arr = val.tolist() if isinstance(val, np.ndarray) else list(val)
+                    display = arr[:5]
+                    suffix = f" ... (len={len(arr)})" if len(arr) > 5 else ""
+                    display_str = _fmt_val(display)
+                    print(f"[DATA PREVIEW]   {col}: {display_str}{suffix}")
+                # 后续行序列字段跳过，大幅减少输出量
+            else:
+                print(f"[DATA PREVIEW]   {col}: {_fmt_val(val)}")
+    print("[DATA PREVIEW] ======================================================\n")
+
     if max_rows and total_rows > max_rows:
         df = df.head(max_rows)
         print(f'      截取前 {max_rows:,} 行用于分析')
 
-    # 2. 导出离线训练数据
+    # 2. 导出离线训练数据（parquet 格式，供模型训练使用）
     if export_rows:
+        export_df = df.head(export_rows)
         export_path = os.path.join(output_dir, f'offline_train_{export_rows}.parquet')
-        df.head(export_rows).to_parquet(export_path, index=False)
-        print(f'[2/8] 已导出前 {export_rows:,} 行 → {export_path}')
+        export_df.to_parquet(export_path, index=False)
+        print(f'[2/8] 已导出前 {len(export_df):,} 行 → {export_path}')
     else:
         print(f'[2/8] 跳过导出（未指定 --export_rows）')
 

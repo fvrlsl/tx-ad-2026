@@ -34,7 +34,9 @@ python3 -u "${SCRIPT_DIR}/train.py" \
     --num_workers 8 \
     --seq_encoder_type longer \
     --seq_top_k 64 \
-    --seq_causal false \
+    --use_target_aware_topk \
+    --pre_topk 256 \
+    --use_amp \
     "$@"
 
 # ── Alternative A: LongerEncoder K=128（精度优先，速度约为 K=64 的 1/4）───
@@ -48,7 +50,6 @@ python3 -u "${SCRIPT_DIR}/train.py" \
 #     --num_workers 8 \
 #     --seq_encoder_type longer \
 #     --seq_top_k 128 \
-#     --seq_causal false \
 #     "$@"
 
 # ── Alternative B: LongerEncoder K=32（速度优先，快速验证实验）─────────────
@@ -62,7 +63,6 @@ python3 -u "${SCRIPT_DIR}/train.py" \
 #     --num_workers 8 \
 #     --seq_encoder_type longer \
 #     --seq_top_k 32 \
-#     --seq_causal false \
 #     "$@"
 
 # ── Alternative C: GroupNSTokenizer driven by ns_groups.json ────────────────

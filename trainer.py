@@ -58,6 +58,7 @@ class PCVRHyFormerRankingTrainer:
         ns_groups_path: Optional[str] = None,
         eval_every_n_steps: int = 0,
         train_config: Optional[Dict[str, Any]] = None,
+        use_amp: bool = False,
     ) -> None:
         self.model: nn.Module = model
         self.train_loader: DataLoader = train_loader
@@ -107,6 +108,14 @@ class PCVRHyFormerRankingTrainer:
         self.ckpt_params: Dict[str, Any] = ckpt_params or {}
         self.eval_every_n_steps: int = eval_every_n_steps
         self.train_config: Optional[Dict[str, Any]] = train_config
+
+        # AMP (Automatic Mixed Precision) for fp16 speedup on CUDA.
+        self.use_amp: bool = use_amp and device.startswith('cuda')
+        if self.use_amp:
+            self.grad_scaler = torch.cuda.amp.GradScaler()
+            logging.info("AMP enabled: using autocast(float16) + GradScaler")
+        else:
+            self.grad_scaler = None
 
         logging.info(f"PCVRHyFormerRankingTrainer loss_type={loss_type}, "
                      f"focal_alpha={focal_alpha}, focal_gamma={focal_gamma}, "
@@ -409,21 +418,39 @@ class PCVRHyFormerRankingTrainer:
             self.sparse_optimizer.zero_grad()
 
         model_input = self._make_model_input(device_batch)
-        logits = self.model(model_input)  # (B, 1)
-        logits = logits.squeeze(-1)  # (B,)
 
-        if self.loss_type == 'focal':
-            loss = sigmoid_focal_loss(logits, label, alpha=self.focal_alpha, gamma=self.focal_gamma)
+        if self.use_amp:
+            with torch.cuda.amp.autocast(dtype=torch.float16):
+                logits = self.model(model_input).squeeze(-1)
+                if self.loss_type == 'focal':
+                    loss = sigmoid_focal_loss(logits, label, alpha=self.focal_alpha, gamma=self.focal_gamma)
+                else:
+                    loss = F.binary_cross_entropy_with_logits(logits, label)
+            self.grad_scaler.scale(loss).backward()
+            self.grad_scaler.unscale_(self.dense_optimizer)
+            if self.sparse_optimizer is not None:
+                self.grad_scaler.unscale_(self.sparse_optimizer)
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0, foreach=False)
+            self.grad_scaler.step(self.dense_optimizer)
+            if self.sparse_optimizer is not None:
+                self.grad_scaler.step(self.sparse_optimizer)
+            self.grad_scaler.update()
         else:
-            loss = F.binary_cross_entropy_with_logits(logits, label)
-        loss.backward()
-        # foreach=False: avoids a PyTorch _foreach_norm CUDA kernel bug observed
-        # with certain tensor shapes in this project.
-        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0, foreach=False)
+            logits = self.model(model_input)  # (B, 1)
+            logits = logits.squeeze(-1)  # (B,)
 
-        self.dense_optimizer.step()
-        if self.sparse_optimizer is not None:
-            self.sparse_optimizer.step()
+            if self.loss_type == 'focal':
+                loss = sigmoid_focal_loss(logits, label, alpha=self.focal_alpha, gamma=self.focal_gamma)
+            else:
+                loss = F.binary_cross_entropy_with_logits(logits, label)
+            loss.backward()
+            # foreach=False: avoids a PyTorch _foreach_norm CUDA kernel bug observed
+            # with certain tensor shapes in this project.
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0, foreach=False)
+
+            self.dense_optimizer.step()
+            if self.sparse_optimizer is not None:
+                self.sparse_optimizer.step()
 
         return loss.item()
 
@@ -488,7 +515,11 @@ class PCVRHyFormerRankingTrainer:
         label = device_batch['label']
 
         model_input = self._make_model_input(device_batch)
-        logits, _ = self.model.predict(model_input)  # (B, 1), (B, D)
-        logits = logits.squeeze(-1)  # (B,)
+        if self.use_amp:
+            with torch.cuda.amp.autocast(dtype=torch.float16):
+                logits, _ = self.model.predict(model_input)
+        else:
+            logits, _ = self.model.predict(model_input)  # (B, 1), (B, D)
+        logits = logits.squeeze(-1).float()  # ensure fp32 for metric computation
 
         return logits, label
